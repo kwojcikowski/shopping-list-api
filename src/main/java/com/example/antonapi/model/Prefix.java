@@ -5,28 +5,28 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
-import javax.persistence.*;
-import java.io.Serializable;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import java.math.BigDecimal;
 
 @Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class StoreSection {
-
+public class Prefix {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @NonNull
-    private Long id;
+    Long id;
 
     @NonNull
-    @ManyToOne
-    private Store store;
+    String name;
 
     @NonNull
-    @ManyToOne
-    private Section section;
+    String abbreviation;
 
     @NonNull
-    private Integer position;
+    Double scale;
 }
