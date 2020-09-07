@@ -6,7 +6,6 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
 import javax.persistence.*;
-import java.util.List;
 
 @Entity
 @Data
@@ -15,7 +14,6 @@ import java.util.List;
 public class BaseUnit {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @NonNull
     Long id;
 
     @NonNull

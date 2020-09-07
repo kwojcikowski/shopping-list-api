@@ -6,7 +6,6 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
 import javax.persistence.*;
-import java.io.Serializable;
 
 @Entity
 @Data
@@ -16,7 +15,6 @@ public class StoreSection {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @NonNull
     private Long id;
 
     @NonNull

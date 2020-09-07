@@ -10,7 +10,7 @@ INSERT INTO section(name) VALUES
 ('Napoje'), ('Karma dla zwierząt'), ('Chemia i kosmetyki'), ('Produkty do wypieków'),
 ('Smarowidła słodkie'), ('Produkty zbożowe');
 
-INSERT INTO store(name) VALUES ('Lidl Średzka'), ('Lidl Królewiecka');
+INSERT INTO store(name, url_friendly_name) VALUES ('Lidl Średzka', 'lidl-sredzka'), ('Lidl Królewiecka', 'lidl-krolewiecka');
 
 INSERT INTO store_section(store_id, section_id, position) VALUES (1,1,1), (1,2,2), (1,3,3), (1,4,4), (1,5,5), (1,6,6),
                                                                  (1,7,7), (1,8,8), (1,9,9), (1, 10, 10), (1, 11, 11),
@@ -54,7 +54,7 @@ INSERT INTO prefix(abbreviation, name, scale) VALUES ('Y', 'JOTTA', 100000000000
                                                      ('y', 'JOKTO', 0.000000000000000000000001);
 
 
-INSERT INTO unit(base_unit_id, prefix_id) VALUES (8, 11), (3, 11), (9, 11), (3, 8), (9, 14);
+INSERT INTO unit(base_unit_id, prefix_id, master_unit_id) VALUES (8, 11, 1), (3, 11, 2), (9, 11, 3), (3, 8, 2), (9, 14, 3);
 
 INSERT INTO product(default_unit_id, name, section_id) VALUES (2, 'Ryż', 11), (3, 'Mleko', 33), (1, 'Banan', 9),
                                                               (1, 'Jabłko', 9), (2, 'Łosoś wędzony', 16), (3, 'Woda', 30);

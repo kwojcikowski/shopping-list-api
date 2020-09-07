@@ -1,43 +1,46 @@
 package com.example.antonapi.controller;
 
 import com.example.antonapi.model.CartItem;
-import com.example.antonapi.repository.BaseUnitRepository;
 import com.example.antonapi.repository.CartItemRepository;
-import com.example.antonapi.repository.PrefixRepository;
-import com.example.antonapi.repository.UnitRepository;
 import com.example.antonapi.service.SmartUnits;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.rest.webmvc.PersistentEntityResource;
+import org.springframework.data.rest.webmvc.PersistentEntityResourceAssembler;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
-import java.net.URI;
+import java.util.List;
 
 @RepositoryRestController
+@CrossOrigin
 public class CartItemController {
 
     @Autowired
-    CartItemRepository cartItemRepository;
-    @Autowired
-    UnitRepository unitRepository;
+    private CartItemRepository cartItemRepository;
 
     @PostMapping(path = "/cartItems")
-    public ResponseEntity<?> addCartItem(@RequestBody CartItem cartItemFromRequest){
-        System.out.println(cartItemFromRequest);
+    public ResponseEntity<EntityModel<PersistentEntityResource>> addCartItem(@RequestBody CartItem cartItemFromRequest, PersistentEntityResourceAssembler assembler){
         //Check whether cart entry with same product and unit exists, if so add quantities
         CartItem existing = cartItemRepository
-                .findByProductAndUnit(cartItemFromRequest.getProduct(), cartItemFromRequest.getUnit());
-        if(existing != null){
-            return ResponseEntity.ok().body(SmartUnits.evaluateBestUnit(unitRepository, cartItemFromRequest));
-        }
-        CartItem cartItem = cartItemRepository.save(cartItemFromRequest);
-        final URI uri =
-                MvcUriComponentsBuilder.fromController(getClass())
-                        .path("/{id}")
-                        .buildAndExpand(cartItem.getId())
-                        .toUri();
-        return ResponseEntity.created(uri).body(cartItem);
+                .findByProductAndUnit_BaseUnit(cartItemFromRequest.getProduct(), cartItemFromRequest.getUnit().getBaseUnit());
+        CartItem itemToSave = existing != null
+                ? SmartUnits.evaluateBestUnit(existing, cartItemFromRequest)
+                : SmartUnits.evaluateBestUnit(cartItemFromRequest);
+        CartItem cartItem = cartItemRepository.saveAndFlush(itemToSave);
+
+        return ResponseEntity.ok(EntityModel.of(assembler.toModel(cartItem)));
+    }
+
+    @PatchMapping(path = "/cartItems")
+    public ResponseEntity<CollectionModel<PersistentEntityResource>> updateCartItems(@RequestBody List<CartItem> cartItemsFromRequest, PersistentEntityResourceAssembler assembler) {
+        cartItemRepository.saveAll(cartItemsFromRequest);
+        cartItemRepository.flush();
+        return ResponseEntity.ok(CollectionModel.of(assembler.toCollectionModel(cartItemRepository.findAll())));
     }
 }

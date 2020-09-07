@@ -1,4 +1,5 @@
 package com.example.antonapi.model;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 
 import javax.persistence.*;
@@ -8,11 +9,12 @@ import java.math.BigDecimal;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CartItem {
+@RequiredArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+public class CartItem{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @NonNull
     private Long id;
 
     @OneToOne()

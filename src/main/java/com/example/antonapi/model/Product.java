@@ -1,24 +1,19 @@
 package com.example.antonapi.model;
 
-import com.example.antonapi.deserializer.ProductDeserializer;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.*;
 import javax.persistence.*;
 
 @Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-//@JsonDeserialize(using = ProductDeserializer.class)
+@RequiredArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Product {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @NonNull
     private Long id;
 
     @NonNull

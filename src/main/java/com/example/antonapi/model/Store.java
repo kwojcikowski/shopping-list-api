@@ -14,9 +14,11 @@ import javax.persistence.*;
 public class Store {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @NonNull
     private Long id;
 
     @NonNull
     private String name;
+
+    @NonNull
+    private String urlFriendlyName;
 }
