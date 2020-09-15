@@ -1,8 +1,10 @@
 package com.example.antonapi.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 import javax.persistence.*;
+import java.io.File;
 
 @Entity
 @Data
@@ -26,4 +28,12 @@ public class Product {
     @ManyToOne
     @NonNull
     private Section section;
+
+    @JsonIgnore
+    @NonNull
+    private File image;
+
+    @JsonIgnore
+    @NonNull
+    private File thumbImage;
 }
