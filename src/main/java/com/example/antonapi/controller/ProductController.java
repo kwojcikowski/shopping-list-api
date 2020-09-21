@@ -2,7 +2,6 @@ package com.example.antonapi.controller;
 
 import com.example.antonapi.model.Product;
 import com.example.antonapi.repository.ProductRepository;
-import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.PersistentEntityResource;
 import org.springframework.data.rest.webmvc.PersistentEntityResourceAssembler;
@@ -18,13 +17,15 @@ import java.io.*;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 @RepositoryRestController
 @CrossOrigin
 public class ProductController {
 
-    final String NO_IMAGE = "no_img.png";
+    final String NO_IMAGE = "no_image.png";
+    final String NO_IMAGE_THUMBNAIL = "no_image_thumbnail.png";
 
     @Autowired
     ProductRepository productRepository;
@@ -45,36 +46,40 @@ public class ProductController {
     }
 
     @GetMapping(path = "/products/{productId}/image")
-    public ResponseEntity<Map<String, byte[]>> getImage(@PathVariable("productId") Long productId) throws IOException {
+    public ResponseEntity<Map<String, Object>> getImage(@PathVariable("productId") Long productId) throws IOException {
         Product product = productRepository.findProductById(productId);
-        byte[] media;
+        Map<String, Object> media;
         try {
             media = getImageFromLocalResources(product.getImage().getName());
         }catch (NullPointerException e){
             media = getImageFromLocalResources(NO_IMAGE);
         }
-        return ResponseEntity.ok(Collections.singletonMap("image", media));
+        return ResponseEntity.ok(media);
     }
 
     @GetMapping(path = "/products/{productId}/thumbImage")
-    public ResponseEntity<Map<String, byte[]>> getThumbImage(@PathVariable("productId")  Long productId) throws IOException {
+    public ResponseEntity<Map<String, Object>> getThumbImage(@PathVariable("productId")  Long productId) throws IOException {
         Product product = productRepository.findProductById(productId);
-        byte[] media;
+        Map<String, Object> media;
         try {
             media = getImageFromLocalResources(product.getThumbImage().getName());
         }catch (NullPointerException e){
-            media = getImageFromLocalResources(NO_IMAGE);
+            media = getImageFromLocalResources(NO_IMAGE_THUMBNAIL);
         }
-        return ResponseEntity.ok(Collections.singletonMap("image", media));
+        return ResponseEntity.ok(media);
     }
 
-    private byte[] getImageFromLocalResources(String fileName) throws IOException {
+    private Map<String, Object> getImageFromLocalResources(String fileName) throws IOException {
+        Map<String, Object> map = new HashMap<>();
         Path noImagePath = FileSystems.getDefault().getPath("src","main", "resources", "img", fileName);
         File f = new File(noImagePath.toString());
         String fileType = f.getName().split("\\.")[1];
         BufferedImage image = ImageIO.read(f);
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ImageIO.write(image, fileType, bos);
-        return bos.toByteArray();
+        map.put("width", image.getWidth());
+        map.put("height", image.getHeight());
+        map.put("image", bos.toByteArray());
+        return map;
     }
 }
