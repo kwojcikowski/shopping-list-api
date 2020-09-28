@@ -1,85 +1,74 @@
 package com.example.antonapi.controller;
 
 import com.example.antonapi.model.Product;
-import com.example.antonapi.repository.ProductRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.rest.webmvc.PersistentEntityResource;
-import org.springframework.data.rest.webmvc.PersistentEntityResourceAssembler;
+import com.example.antonapi.service.ProductService;
+import com.example.antonapi.service.assembler.ProductModelAssembler;
+import com.example.antonapi.service.dto.ImageDTO;
+import com.example.antonapi.service.dto.ProductDTO;
+import com.example.antonapi.service.exception.ProductException;
+import com.example.antonapi.service.tools.ImagesTools;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
 import java.io.*;
-import java.nio.file.FileSystems;
-import java.nio.file.Path;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 @RepositoryRestController
 @CrossOrigin
+@RequiredArgsConstructor
+@RequestMapping(path = "/products")
 public class ProductController {
 
-    final String NO_IMAGE = "no_image.png";
-    final String NO_IMAGE_THUMBNAIL = "no_image_thumbnail.png";
-
-    @Autowired
-    ProductRepository productRepository;
+    private final @NonNull ProductService productService;
+    private final @NonNull ProductModelAssembler productModelAssembler;
+    private final @NonNull ModelMapper modelMapper;
 
 
-    @PostMapping(path = "/products")
-    public ResponseEntity<EntityModel<PersistentEntityResource>> addProduct(@RequestBody Product requestProduct,
-                                                                            PersistentEntityResourceAssembler assembler) throws IOException {
-        Product product = productRepository.saveAndFlush(requestProduct);
-        PersistentEntityResource resource = assembler.toModel(product);
-        resource.add(WebMvcLinkBuilder.linkTo(
-                WebMvcLinkBuilder.methodOn(ProductController.class)
-                        .getImage(product.getId())).withRel("image"));
-        resource.add(WebMvcLinkBuilder.linkTo(
-                WebMvcLinkBuilder.methodOn(ProductController.class)
-                        .getThumbImage(product.getId())).withRel("thumbImage"));
-        return ResponseEntity.ok(EntityModel.of(resource));
+    @GetMapping
+    public ResponseEntity<CollectionModel<ProductDTO>> getAllProducts() {
+        return ResponseEntity.ok(productModelAssembler.toCollectionModel(productService.getAllProducts()));
     }
 
-    @GetMapping(path = "/products/{productId}/image")
-    public ResponseEntity<Map<String, Object>> getImage(@PathVariable("productId") Long productId) throws IOException {
-        Product product = productRepository.findProductById(productId);
-        Map<String, Object> media;
-        try {
-            media = getImageFromLocalResources(product.getImage().getName());
-        }catch (NullPointerException e){
-            media = getImageFromLocalResources(NO_IMAGE);
-        }
-        return ResponseEntity.ok(media);
+    @GetMapping(path = "/{id}")
+    public ResponseEntity<ProductDTO> getProductById(@PathVariable("id") Long id){
+        return ResponseEntity.ok(productModelAssembler.toModel(productService.findProduct(id)));
     }
 
-    @GetMapping(path = "/products/{productId}/thumbImage")
-    public ResponseEntity<Map<String, Object>> getThumbImage(@PathVariable("productId")  Long productId) throws IOException {
-        Product product = productRepository.findProductById(productId);
-        Map<String, Object> media;
-        try {
-            media = getImageFromLocalResources(product.getThumbImage().getName());
-        }catch (NullPointerException e){
-            media = getImageFromLocalResources(NO_IMAGE_THUMBNAIL);
-        }
-        return ResponseEntity.ok(media);
+    @PostMapping
+    public ResponseEntity<ProductDTO> addProduct(@RequestBody ProductDTO requestProduct) throws IOException, ProductException {
+        Product registeredProduct = productService.registerNewProduct(requestProduct);
+        Product addedProduct = productService.addProduct(registeredProduct);
+        return ResponseEntity.ok(productModelAssembler.toModel(addedProduct));
     }
 
-    private Map<String, Object> getImageFromLocalResources(String fileName) throws IOException {
-        Map<String, Object> map = new HashMap<>();
-        Path noImagePath = FileSystems.getDefault().getPath("src","main", "resources", "img", fileName);
-        File f = new File(noImagePath.toString());
-        String fileType = f.getName().split("\\.")[1];
-        BufferedImage image = ImageIO.read(f);
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ImageIO.write(image, fileType, bos);
-        map.put("width", image.getWidth());
-        map.put("height", image.getHeight());
-        map.put("image", bos.toByteArray());
-        return map;
+    @PatchMapping
+    public ResponseEntity<ProductDTO> updateProduct(@RequestBody ProductDTO requestProduct) throws ProductException {
+        Product mappedProduct = modelMapper.map(requestProduct, Product.class);
+        Product updatedProduct = productService.updateProduct(mappedProduct);
+        return ResponseEntity.ok(productModelAssembler.toModel(updatedProduct));
+    }
+
+    @DeleteMapping(path = "/{id}")
+    public ResponseEntity.HeadersBuilder<?> removeProduct(@PathVariable("id") Long id) throws ProductException {
+        productService.deleteProductById(id);
+        return ResponseEntity.noContent();
+    }
+
+    @GetMapping(path = "/{productId}/image")
+    public ResponseEntity<ImageDTO> getProductImage(@PathVariable("productId") Long productId) throws IOException {
+        Product product = productService.findProduct(productId);
+        ImageDTO imageDTO = ImagesTools.getImageFromLocalResources(product.getImage().getAbsolutePath());
+        return ResponseEntity.ok(imageDTO);
+    }
+
+    @GetMapping(path = "/{productId}/thumbImage")
+    public ResponseEntity<ImageDTO> getProductThumbImage(@PathVariable("productId")  Long productId) throws IOException {
+        Product product = productService.findProduct(productId);
+        ImageDTO imageDTO = ImagesTools.getImageFromLocalResources(product.getThumbImage().getAbsolutePath());
+        return ResponseEntity.ok(imageDTO);
     }
 }

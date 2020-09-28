@@ -1,10 +1,11 @@
-package com.example.antonapi.service;
+package com.example.antonapi.service.tools;
 
 import com.example.antonapi.model.CartItem;
 import com.example.antonapi.model.Unit;
 import com.example.antonapi.repository.UnitRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -12,7 +13,7 @@ import java.util.*;
 
 public class SmartUnits {
 
-    private static UnitRepository unitRepository = (UnitRepository) RepositoryService.getRepos().get(Unit.class);
+    public static UnitRepository unitRepository;
 
     public static CartItem evaluateBestUnit(CartItem cartItem1, CartItem cartItem2){
         CartItem normalizedCartItem1 = SmartUnits.normalizeUnitAndQuantity(cartItem1);
@@ -47,5 +48,9 @@ public class SmartUnits {
                     .divide(BigDecimal.valueOf(u.getPrefix().getScale()), MathContext.UNLIMITED);
         }
         return new CartItem(cartItem.getId(), cartItem.getProduct(), evaluatedUnit, evaluatedQuantity);
+    }
+
+    public void setUnitRepository(UnitRepository unitRepository){
+        SmartUnits.unitRepository = unitRepository;
     }
 }

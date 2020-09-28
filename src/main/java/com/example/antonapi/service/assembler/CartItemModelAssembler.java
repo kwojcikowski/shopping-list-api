@@ -1,0 +1,44 @@
+package com.example.antonapi.service.assembler;
+
+import com.example.antonapi.controller.CartItemController;
+import com.example.antonapi.model.CartItem;
+import com.example.antonapi.service.dto.CartItemDTO;
+import org.modelmapper.ModelMapper;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.server.RepresentationModelAssembler;
+import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
+@Component
+public class CartItemModelAssembler implements RepresentationModelAssembler<CartItem, CartItemDTO> {
+
+    @Override
+    public CartItemDTO toModel(CartItem entity) {
+        ModelMapper mapper = new ModelMapper();
+        CartItemDTO cartItemDTO = mapper.map(entity, CartItemDTO.class);
+
+        Link selfLink = linkTo(methodOn(CartItemController.class).getCartItemById(entity.getId())).withSelfRel();
+        cartItemDTO.add(selfLink);
+        return cartItemDTO;
+    }
+
+    @Override
+    public CollectionModel<CartItemDTO> toCollectionModel(Iterable<? extends CartItem> entities) {
+        ModelMapper modelMapper = new ModelMapper();
+        List<CartItemDTO> cartItemDTOS = new ArrayList<>();
+
+        for (CartItem entity : entities){
+            CartItemDTO cartItemDTO = modelMapper.map(entity, CartItemDTO.class);
+            Link selfLink = linkTo(methodOn(CartItemController.class).getCartItemById(entity.getId())).withSelfRel();
+            cartItemDTO.add(selfLink);
+            cartItemDTOS.add(cartItemDTO);
+        }
+        return CollectionModel.of(cartItemDTOS);
+    }
+}
