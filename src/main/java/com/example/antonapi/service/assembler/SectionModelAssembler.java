@@ -29,14 +29,10 @@ public class SectionModelAssembler implements RepresentationModelAssembler<Secti
 
     @Override
     public CollectionModel<SectionDTO> toCollectionModel(Iterable<? extends Section> entities) {
-        ModelMapper modelMapper = new ModelMapper();
-        List<SectionDTO> sectionsDTO = new ArrayList<>();
+        List<SectionDTO> sectionDTOS = new ArrayList<>();
         for (Section entity : entities){
-            SectionDTO sectionDTO = modelMapper.map(entity, SectionDTO.class);
-            Link selfLink = linkTo(methodOn(SectionController.class).getSectionById(entity.getId())).withSelfRel();
-            sectionDTO.add(selfLink);
-            sectionsDTO.add(sectionDTO);
+            sectionDTOS.add(toModel(entity));
         }
-        return CollectionModel.of(sectionsDTO);
+        return CollectionModel.of(sectionDTOS);
     }
 }

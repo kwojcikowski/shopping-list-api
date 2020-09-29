@@ -37,17 +37,9 @@ public class ProductModelAssembler implements RepresentationModelAssembler<Produ
     @SneakyThrows
     @Override
     public CollectionModel<ProductDTO> toCollectionModel(Iterable<? extends Product> entities) {
-        ModelMapper modelMapper = new ModelMapper();
         List<ProductDTO> productDTOS = new ArrayList<>();
-
         for (Product entity : entities){
-            ProductDTO productDTO = modelMapper.map(entity, ProductDTO.class);
-            Link selfLink = linkTo(methodOn(ProductController.class).getProductById(entity.getId())).withSelfRel();
-            Link imageLink = linkTo(methodOn(ProductController.class).getProductImage(entity.getId())).withRel("image");
-            Link thumbImageLink =
-                    linkTo(methodOn(ProductController.class).getProductThumbImage(entity.getId())).withRel("thumbImage");
-            productDTO.add(List.of(selfLink, imageLink, thumbImageLink));
-            productDTOS.add(productDTO);
+            productDTOS.add(toModel(entity));
         }
         return CollectionModel.of(productDTOS);
     }

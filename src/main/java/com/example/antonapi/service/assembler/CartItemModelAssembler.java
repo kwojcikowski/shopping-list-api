@@ -30,14 +30,9 @@ public class CartItemModelAssembler implements RepresentationModelAssembler<Cart
 
     @Override
     public CollectionModel<CartItemDTO> toCollectionModel(Iterable<? extends CartItem> entities) {
-        ModelMapper modelMapper = new ModelMapper();
         List<CartItemDTO> cartItemDTOS = new ArrayList<>();
-
         for (CartItem entity : entities){
-            CartItemDTO cartItemDTO = modelMapper.map(entity, CartItemDTO.class);
-            Link selfLink = linkTo(methodOn(CartItemController.class).getCartItemById(entity.getId())).withSelfRel();
-            cartItemDTO.add(selfLink);
-            cartItemDTOS.add(cartItemDTO);
+            cartItemDTOS.add(toModel(entity));
         }
         return CollectionModel.of(cartItemDTOS);
     }

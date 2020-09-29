@@ -45,14 +45,6 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Product updateProduct(Product product) throws ProductException {
-        if(productRepository.existsById(product.getId()))
-            return productRepository.saveAndFlush(product);
-        else
-            throw new ProductException("Unable to add product: Product with name " + product.getName() + " does not exist.");
-    }
-
-    @Override
     public void deleteProductById(Long id) throws ProductException {
         if(productRepository.existsById(id))
             productRepository.deleteById(id);

@@ -1,6 +1,5 @@
 package com.example.antonapi.service.assembler;
 
-import com.example.antonapi.controller.SectionController;
 import com.example.antonapi.controller.StoreController;
 import com.example.antonapi.model.Store;
 import com.example.antonapi.service.dto.StoreDTO;
@@ -30,13 +29,9 @@ public class StoreModelAssembler implements RepresentationModelAssembler<Store, 
 
     @Override
     public CollectionModel<StoreDTO> toCollectionModel(Iterable<? extends Store> entities) {
-        ModelMapper modelMapper = new ModelMapper();
         List<StoreDTO> storeDTOs = new ArrayList<>();
         for (Store entity : entities){
-            StoreDTO storeDTO = modelMapper.map(entity, StoreDTO.class);
-            Link selfLink = linkTo(methodOn(SectionController.class).getSectionById(entity.getId())).withSelfRel();
-            storeDTO.add(selfLink);
-            storeDTOs.add(storeDTO);
+            storeDTOs.add(toModel(entity));
         }
         return CollectionModel.of(storeDTOs);
     }

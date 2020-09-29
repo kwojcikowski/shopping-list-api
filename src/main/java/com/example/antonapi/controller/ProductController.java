@@ -45,13 +45,6 @@ public class ProductController {
         return ResponseEntity.ok(productModelAssembler.toModel(addedProduct));
     }
 
-    @PatchMapping
-    public ResponseEntity<ProductDTO> updateProduct(@RequestBody ProductDTO requestProduct) throws ProductException {
-        Product mappedProduct = modelMapper.map(requestProduct, Product.class);
-        Product updatedProduct = productService.updateProduct(mappedProduct);
-        return ResponseEntity.ok(productModelAssembler.toModel(updatedProduct));
-    }
-
     @DeleteMapping(path = "/{id}")
     public ResponseEntity.HeadersBuilder<?> removeProduct(@PathVariable("id") Long id) throws ProductException {
         productService.deleteProductById(id);
