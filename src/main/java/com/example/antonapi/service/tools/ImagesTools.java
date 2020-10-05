@@ -18,24 +18,24 @@ import java.nio.file.Path;
 
 public class ImagesTools {
 
-    private static final int THUMBNAIL_HEIGHT = 50;
-    private static final int THUMBNAIL_WIDTH = 50;
-    private static final String NO_IMAGE_FILENAME = "no_image.png";
+    public static final int THUMBNAIL_HEIGHT = 50;
+    public static final int THUMBNAIL_WIDTH = 50;
+    public static final String NO_IMAGE_FILENAME = "no_image.png";
 
-    public static File saveImageFromURL(String url, String destination) throws IOException {
+    public static File saveImageFromURL(String url, String destinationPath) throws IOException {
         try {
             URL imageUrl = new URL(url);
             ReadableByteChannel readableByteChannel = Channels.newChannel(imageUrl.openStream());
-            FileOutputStream fileOutputStream = new FileOutputStream(destination);
+            FileOutputStream fileOutputStream = new FileOutputStream(destinationPath);
             FileChannel fileChannel = fileOutputStream.getChannel();
             fileOutputStream.getChannel()
                     .transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
             readableByteChannel.close();
             fileOutputStream.close();
             fileChannel.close();
-            return new File(destination);
+            return new File(destinationPath);
         }catch (IOException e){
-            throw new IOException("Error saving image from URL");
+            throw new IOException("Error saving image from URL", e.getCause());
         }
     }
 
@@ -61,11 +61,14 @@ public class ImagesTools {
     public static ImageDTO getImageFromLocalResources(String fileName) throws IOException {
         Path imagePath = FileSystems.getDefault().getPath("src","main", "resources", "img", fileName);
         File f = new File(imagePath.toString());
-        String fileType = f.getName().split("\\.")[1];
+        String fileType;
         BufferedImage image;
         try {
+            //If throws exception then incorrect name given.
+            fileType = f.getName().split("\\.")[1];
+            //If throws exception then non readable file given.
             image = ImageIO.read(f);
-        }catch (IOException e){
+        }catch (IOException | ArrayIndexOutOfBoundsException e){
             return getImageFromLocalResources(NO_IMAGE_FILENAME);
         }
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
