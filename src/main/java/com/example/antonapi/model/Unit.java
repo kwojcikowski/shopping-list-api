@@ -16,6 +16,14 @@ import java.util.Objects;
 @RequiredArgsConstructor
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Unit {
+
+    public Unit(Long id, @NonNull BaseUnit baseUnit, @NonNull Prefix prefix) {
+        this.id = id;
+        this.baseUnit = baseUnit;
+        this.prefix = prefix;
+        this.masterUnit = this;
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;

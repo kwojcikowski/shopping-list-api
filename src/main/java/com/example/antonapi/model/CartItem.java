@@ -17,11 +17,11 @@ public class CartItem{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne()
+    @OneToOne
     @NonNull
     private Product product;
 
-    @ManyToOne()
+    @ManyToOne
     @NonNull
     private Unit unit;
 

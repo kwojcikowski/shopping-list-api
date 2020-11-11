@@ -1,0 +1,102 @@
+{
+  "units": [
+    {
+      "id": 1,
+      "baseUnit": {
+        "id": 1,
+        "name": "GRAM",
+        "abbreviation": "g"
+      },
+      "prefix": {
+        "id": 11,
+        "name": "BRAK",
+        "abbreviation": "",
+        "scale": 1
+      }
+    },
+    {
+      "id": 2,
+      "baseUnit": {
+        "id": 2,
+        "name": "SZTUKA",
+        "abbreviation": "szt"
+      },
+      "prefix": {
+        "id": 11,
+        "name": "BRAK",
+        "abbreviation": "",
+        "scale": 1
+      }
+    },
+    {
+      "id": 3,
+      "baseUnit": {
+        "id": 3,
+        "name": "LITR",
+        "abbreviation": "l"
+      },
+      "prefix": {
+        "id": 11,
+        "name": "BRAK",
+        "abbreviation": "",
+        "scale": 1
+      }
+    },
+    {
+      "id": 4,
+      "baseUnit": {
+        "id": 1,
+        "name": "GRAM",
+        "abbreviation": "g"
+      },
+      "prefix": {
+        "id": 8,
+        "name": "KILO",
+        "abbreviation": "k",
+        "scale": 1000
+      },
+      "masterUnit": {
+        "id": 1,
+        "baseUnit": {
+          "id": 1,
+          "name": "GRAM",
+          "abbreviation": "g"
+        },
+        "prefix": {
+          "id": 11,
+          "name": "BRAK",
+          "abbreviation": "",
+          "scale": 1
+        }
+      }
+    },
+    {
+      "id": 5,
+      "baseUnit": {
+        "id": 3,
+        "name": "LITR",
+        "abbreviation": "l"
+      },
+      "prefix": {
+        "id": 14,
+        "name": "MILI",
+        "abbreviation": "m",
+        "scale": 0.001
+      },
+      "masterUnit": {
+        "id": 3,
+        "baseUnit": {
+          "id": 3,
+          "name": "LITR",
+          "abbreviation": "l"
+        },
+        "prefix": {
+          "id": 11,
+          "name": "BRAK",
+          "abbreviation": "",
+          "scale": 1
+        }
+      }
+    }
+  ]
+}
