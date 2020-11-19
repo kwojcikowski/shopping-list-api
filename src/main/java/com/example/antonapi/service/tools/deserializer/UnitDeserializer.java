@@ -17,7 +17,7 @@ public class UnitDeserializer implements JsonDeserializer<Unit> {
         Prefix prefix = jsonDeserializationContext.deserialize(root.get("prefix"), Prefix.class);
         JsonElement masterUnitNode = root.get("masterUnit");
         if(masterUnitNode == null)
-            return new Unit(id, baseUnit, prefix);
+            return new Unit(id, baseUnit, prefix, null);
         return new Unit(id, baseUnit, prefix, jsonDeserializationContext.deserialize(masterUnitNode, Unit.class));
     }
 }

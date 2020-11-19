@@ -3,6 +3,7 @@ package com.example.antonapi.service.assembler;
 import com.example.antonapi.controller.CartItemController;
 import com.example.antonapi.model.CartItem;
 import com.example.antonapi.service.dto.CartItemDTO;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.modelmapper.ModelMapper;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.Link;

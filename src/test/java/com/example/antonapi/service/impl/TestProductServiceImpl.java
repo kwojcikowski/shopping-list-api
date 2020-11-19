@@ -73,12 +73,20 @@ public class TestProductServiceImpl {
     public void testAddProductThrowExceptionOnExistingProductWithSameName(){
         //Given
         ProductRepository productRepository = mock(ProductRepository.class);
-        Product product = new Product(1L,"Banana", mock(Unit.class),
-                mock(Section.class), mock(File.class), mock(File.class));
+        Product product = Product.builder()
+                .id(1L)
+                .name("Banana")
+                .defaultUnit(mock(Unit.class))
+                .section(mock(Section.class))
+                .build();
         when(productRepository.findProductByName("Banana")).thenReturn(product);
         ProductService service = new ProductServiceImpl(productRepository);
-        Product sameProduct = new Product("Banana", mock(Unit.class),
-                mock(Section.class), mock(File.class), mock(File.class));
+        Product sameProduct = Product.builder()
+                .name("Banana")
+                .defaultUnit(mock(Unit.class))
+                .section(mock(Section.class))
+                .build();
+
 
         //When
         try{

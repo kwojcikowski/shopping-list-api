@@ -5,24 +5,20 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
+import org.springframework.beans.factory.annotation.Value;
+
 import javax.persistence.*;
 import java.util.Objects;
 
 
 @Entity
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @RequiredArgsConstructor
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Unit {
-
-    public Unit(Long id, @NonNull BaseUnit baseUnit, @NonNull Prefix prefix) {
-        this.id = id;
-        this.baseUnit = baseUnit;
-        this.prefix = prefix;
-        this.masterUnit = this;
-    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -38,7 +34,6 @@ public class Unit {
     @JsonIgnore
     Prefix prefix;
 
-    @NonNull
     @ManyToOne
     @JsonBackReference
     @EqualsAndHashCode.Exclude

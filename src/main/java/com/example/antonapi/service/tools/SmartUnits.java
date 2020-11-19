@@ -31,7 +31,9 @@ public class SmartUnits {
         Unit cartItemUnit = cartItem.getUnit();
         BigDecimal evaluatedQuantity = cartItem.getQuantity()
                 .multiply(BigDecimal.valueOf(cartItemUnit.getPrefix().getScale()), MathContext.UNLIMITED);
-        Unit evaluatedUnit = cartItem.getUnit().getMasterUnit();
+        Unit evaluatedUnit = cartItem.getUnit();
+        while(evaluatedUnit.getMasterUnit() != null)
+            evaluatedUnit = evaluatedUnit.getMasterUnit();
         return new CartItem(cartItem.getId(), cartItem.getProduct(), evaluatedUnit, evaluatedQuantity);
     }
 

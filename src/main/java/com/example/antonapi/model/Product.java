@@ -8,6 +8,7 @@ import java.io.File;
 
 @Entity
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @RequiredArgsConstructor
@@ -30,10 +31,8 @@ public class Product {
     private Section section;
 
     @JsonIgnore
-    @NonNull
     private File image;
 
     @JsonIgnore
-    @NonNull
     private File thumbImage;
 }
