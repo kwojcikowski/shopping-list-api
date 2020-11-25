@@ -1,18 +1,28 @@
-package com.example.antonapi.service.assembler;
+package com.example.antonapi.service.modelmapper;
 
 import com.example.antonapi.config.ModelMapperConfiguration;
 import com.example.antonapi.model.*;
+import com.example.antonapi.repository.UnitRepository;
 import com.example.antonapi.service.dto.*;
 import org.junit.jupiter.api.Test;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class TestModelToDTOMapping {
 
-    ModelMapper mapper = new ModelMapperConfiguration().modelMapper();
+    ModelMapper modelMapper = initializeModelMapper();
+
+    private ModelMapper initializeModelMapper() {
+        UnitRepository mockUnitRepository = mock(UnitRepository.class);
+        return new ModelMapperConfiguration(mockUnitRepository).modelMapper();
+    }
 
     @Test
     public void testSectionMappingSuccessful(){
@@ -20,7 +30,8 @@ public class TestModelToDTOMapping {
                 .id(1L)
                 .name("Dairy")
                 .build();
-        SectionDTO expected = mapper.map(actual, SectionDTO.class);
+
+        SectionDTO expected = modelMapper.map(actual, SectionDTO.class);
 
         assertAll(() -> assertThat(expected.getId()).isEqualTo(1L),
                 () -> assertThat(expected.getName()).isEqualTo("Dairy"));
@@ -33,7 +44,7 @@ public class TestModelToDTOMapping {
                 .name("Close store")
                 .urlFriendlyName("close-store")
                 .build();
-        StoreDTO expected = mapper.map(actual, StoreDTO.class);
+        StoreDTO expected = modelMapper.map(actual, StoreDTO.class);
 
         assertAll(() -> assertThat(expected.getId()).isEqualTo(1L),
                 () -> assertThat(expected.getName()).isEqualTo("Close store"),
@@ -58,7 +69,7 @@ public class TestModelToDTOMapping {
                 .position(7)
                 .build();
 
-        StoreSectionDTO expected = mapper.map(actual, StoreSectionDTO.class);
+        StoreSectionDTO expected = modelMapper.map(actual, StoreSectionDTO.class);
 
         assertAll(() -> assertThat(expected.getId()).isEqualTo(1L),
                 () -> assertThat(expected.getPosition()).isEqualTo(7),
@@ -85,7 +96,7 @@ public class TestModelToDTOMapping {
                 .prefix(none)
                 .build();
 
-        UnitDTO expected = mapper.map(actual, UnitDTO.class);
+        UnitDTO expected = modelMapper.map(actual, UnitDTO.class);
 
         assertAll(() -> assertThat(expected.getId()).isEqualTo(1L),
                 () -> assertThat(expected.getAbbreviation()).isEqualTo("l"));
@@ -120,7 +131,7 @@ public class TestModelToDTOMapping {
                 .section(dairy)
                 .build();
 
-        ProductDTO expected = mapper.map(actual, ProductDTO.class);
+        ProductDTO expected = modelMapper.map(actual, ProductDTO.class);
 
         assertAll(() -> assertThat(expected.getId()).isEqualTo(1L),
                 () -> assertThat(expected.getName()).isEqualTo("Milk"),
@@ -165,7 +176,7 @@ public class TestModelToDTOMapping {
                 .quantity(new BigDecimal("2.5"))
                 .build();
 
-        CartItemDTO expected = mapper.map(actual, CartItemDTO.class);
+        CartItemDTO expected = modelMapper.map(actual, CartItemDTO.class);
 
         // Testing only cart item DTO fields, as relations as ProductDTO are tested within ProductDTOModelAssembler
         assertAll(() -> assertThat(expected.getId()).isEqualTo(1L),

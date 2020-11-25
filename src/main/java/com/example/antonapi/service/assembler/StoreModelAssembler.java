@@ -3,6 +3,8 @@ package com.example.antonapi.service.assembler;
 import com.example.antonapi.controller.StoreController;
 import com.example.antonapi.model.Store;
 import com.example.antonapi.service.dto.StoreDTO;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.Link;
@@ -16,12 +18,14 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Component
+@RequiredArgsConstructor
 public class StoreModelAssembler implements RepresentationModelAssembler<Store, StoreDTO> {
+
+    private final @NonNull ModelMapper modelMapper;
 
     @Override
     public StoreDTO toModel(Store entity) {
-        ModelMapper mapper = new ModelMapper();
-        StoreDTO storeDTO = mapper.map(entity, StoreDTO.class);
+        StoreDTO storeDTO = modelMapper.map(entity, StoreDTO.class);
         Link selfLink = linkTo(methodOn(StoreController.class).getStoreById(entity.getId())).withSelfRel();
         storeDTO.add(selfLink);
         return storeDTO;

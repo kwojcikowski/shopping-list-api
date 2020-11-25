@@ -3,8 +3,11 @@ package com.example.antonapi.service.assembler;
 import com.example.antonapi.controller.CartItemController;
 import com.example.antonapi.model.CartItem;
 import com.example.antonapi.service.dto.CartItemDTO;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.dom4j.rule.Mode;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
@@ -17,12 +20,14 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Component
+@RequiredArgsConstructor
 public class CartItemModelAssembler implements RepresentationModelAssembler<CartItem, CartItemDTO> {
+
+    private final @NonNull ModelMapper modelMapper;
 
     @Override
     public CartItemDTO toModel(CartItem entity) {
-        ModelMapper mapper = new ModelMapper();
-        CartItemDTO cartItemDTO = mapper.map(entity, CartItemDTO.class);
+        CartItemDTO cartItemDTO = modelMapper.map(entity, CartItemDTO.class);
 
         Link selfLink = linkTo(methodOn(CartItemController.class).getCartItemById(entity.getId())).withSelfRel();
         cartItemDTO.add(selfLink);

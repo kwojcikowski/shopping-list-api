@@ -5,7 +5,6 @@ import com.example.antonapi.repository.UnitRepository;
 import com.example.antonapi.service.assembler.UnitModelAssembler;
 import com.example.antonapi.service.tools.FilePath;
 import com.example.antonapi.service.tools.JsonFileService;
-import com.google.gson.JsonArray;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,11 +15,8 @@ import org.springframework.hateoas.MediaTypes;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
-import org.springframework.test.web.servlet.result.PrintingResultHandler;
 
 import java.io.IOException;
-import java.util.LinkedHashMap;
 import java.util.List;
 
 import static org.hamcrest.Matchers.*;

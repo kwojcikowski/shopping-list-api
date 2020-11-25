@@ -3,6 +3,8 @@ package com.example.antonapi.service.assembler;
 import com.example.antonapi.controller.SectionController;
 import com.example.antonapi.model.Section;
 import com.example.antonapi.service.dto.SectionDTO;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.Link;
@@ -16,12 +18,14 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Component
+@RequiredArgsConstructor
 public class SectionModelAssembler implements RepresentationModelAssembler<Section, SectionDTO> {
+
+    private final @NonNull ModelMapper modelMapper;
 
     @Override
     public SectionDTO toModel(Section entity) {
-        ModelMapper mapper = new ModelMapper();
-        SectionDTO sectionDTO = mapper.map(entity, SectionDTO.class);
+        SectionDTO sectionDTO = modelMapper.map(entity, SectionDTO.class);
         Link selfLink = linkTo(methodOn(SectionController.class).getSectionById(entity.getId())).withSelfRel();
         sectionDTO.add(selfLink);
         return sectionDTO;

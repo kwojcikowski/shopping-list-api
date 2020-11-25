@@ -3,6 +3,7 @@ package com.example.antonapi.service.assembler;
 import com.example.antonapi.controller.ProductController;
 import com.example.antonapi.model.Product;
 import com.example.antonapi.service.dto.ProductDTO;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.modelmapper.ModelMapper;
@@ -18,13 +19,15 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Component
+@RequiredArgsConstructor
 public class ProductModelAssembler implements RepresentationModelAssembler<Product, ProductDTO> {
+
+    private final @NonNull ModelMapper modelMapper;
 
     @SneakyThrows
     @Override
     public ProductDTO toModel(Product entity) {
-        ModelMapper mapper = new ModelMapper();
-        ProductDTO productDTO = mapper.map(entity, ProductDTO.class);
+        ProductDTO productDTO = modelMapper.map(entity, ProductDTO.class);
 
         Link selfLink = linkTo(methodOn(ProductController.class).getProductById(entity.getId())).withSelfRel();
         Link imageLink = linkTo(methodOn(ProductController.class).getProductImage(entity.getId())).withRel("image");
