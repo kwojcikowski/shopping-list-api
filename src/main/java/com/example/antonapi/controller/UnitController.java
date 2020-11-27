@@ -1,5 +1,6 @@
 package com.example.antonapi.controller;
 
+import com.example.antonapi.model.Unit;
 import com.example.antonapi.repository.UnitRepository;
 import com.example.antonapi.service.assembler.UnitModelAssembler;
 import com.example.antonapi.service.dto.UnitDTO;
@@ -9,6 +10,8 @@ import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import javax.swing.text.html.Option;
 
 @RepositoryRestController
 @CrossOrigin
@@ -26,6 +29,7 @@ public class UnitController {
 
     @GetMapping(path = "/{id}")
     public ResponseEntity<UnitDTO> getUnitById(@PathVariable("id") Long id){
-        return ResponseEntity.ok(unitModelAssembler.toModel(unitRepository.getOne(id)));
+        Unit unit = unitRepository.findById(id).orElse(null);
+        return unit == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(unitModelAssembler.toModel(unit));
     }
 }

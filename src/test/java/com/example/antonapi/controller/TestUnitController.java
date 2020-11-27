@@ -1,10 +1,11 @@
 package com.example.antonapi.controller;
 
+import com.example.antonapi.config.ModelMapperConfiguration;
+import com.example.antonapi.model.BaseUnit;
+import com.example.antonapi.model.Prefix;
 import com.example.antonapi.model.Unit;
 import com.example.antonapi.repository.UnitRepository;
 import com.example.antonapi.service.assembler.UnitModelAssembler;
-import com.example.antonapi.service.tools.FilePath;
-import com.example.antonapi.service.tools.JsonFileService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,8 +17,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.when;
@@ -27,7 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = UnitModelAssembler.class)
 @WebMvcTest(controllers = UnitController.class)
-@Import(UnitController.class)
+@Import({UnitController.class, ModelMapperConfiguration.class})
 public class TestUnitController {
 
     @MockBean
@@ -36,27 +37,69 @@ public class TestUnitController {
     @Autowired
     private MockMvc mockMvc;
 
-    private final List<Unit> testUnits;
-
-    public TestUnitController() throws IOException {
-        this.testUnits = JsonFileService.loadCollectionFromFile(FilePath.UNITS_FILE_PATH, Unit.class);
-    }
-
     @Test
-    public void testSuccessfulGetAllUnits() throws Exception {
-        when(unitRepository.findAll()).thenReturn(testUnits);
+    public void testGetAllUnitsSuccessful() throws Exception {
+        final Prefix none = Prefix.builder()
+                .id(1L)
+                .name("NONE")
+                .abbreviation("")
+                .scale(1.0)
+                .build();
+        final BaseUnit baseUnitLiter = BaseUnit.builder()
+                .id(1L)
+                .name("LITER")
+                .abbreviation("l")
+                .build();
+        final Unit liter = Unit.builder()
+                .id(1L)
+                .baseUnit(baseUnitLiter)
+                .prefix(none)
+                .build();
+        final BaseUnit baseUnitGram = BaseUnit.builder()
+                .id(2L)
+                .name("GRAM")
+                .abbreviation("g")
+                .build();
+        final Unit gram = Unit.builder()
+                .id(2L)
+                .baseUnit(baseUnitGram)
+                .prefix(none)
+                .build();
+        List<Unit> units = List.of(liter, gram);
+        when(unitRepository.findAll()).thenReturn(units);
         mockMvc.perform(get("/units"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaTypes.HAL_JSON))
-                .andExpect(jsonPath("$._embedded.units", hasSize(testUnits.size())));
-//                .andExpect(jsonPath("$._embedded.units", ));
+                .andExpect(jsonPath("$._embedded.units", hasSize(units.size())));
     }
 
     @Test
-    public void testSuccessfulGetUnitById() throws Exception {
-        when(unitRepository.getOne(testUnits.get(0).getId())).thenReturn(testUnits.get(0));
-        mockMvc.perform(get("/units/"+testUnits.get(0).getId())).andExpect(status().isOk())
+    public void testGetUnitByIdSuccessful() throws Exception {
+        final Prefix none = Prefix.builder()
+                .id(1L)
+                .name("NONE")
+                .abbreviation("")
+                .scale(1.0)
+                .build();
+        final BaseUnit baseUnitLiter = BaseUnit.builder()
+                .id(1L)
+                .name("LITER")
+                .abbreviation("l")
+                .build();
+        final Unit liter = Unit.builder()
+                .id(1L)
+                .baseUnit(baseUnitLiter)
+                .prefix(none)
+                .build();
+        when(unitRepository.findById(1L)).thenReturn(java.util.Optional.ofNullable(liter));
+        mockMvc.perform(get("/units/1")).andExpect(status().isOk())
                 .andExpect(content().contentType(MediaTypes.HAL_JSON))
-                .andExpect(jsonPath("$", hasSize(1)));
+                .andExpect(jsonPath("$._links.self.href", endsWith("/units/1")));
+    }
+
+    @Test
+    public void testGetUnitByIdReturnNotFoundOnNonExistingUnit() throws Exception {
+        when(unitRepository.findById(1L)).thenReturn(Optional.empty());
+        mockMvc.perform(get("/units/1")).andExpect(status().isNotFound());
     }
 }
