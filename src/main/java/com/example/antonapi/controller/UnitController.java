@@ -30,6 +30,8 @@ public class UnitController {
     @GetMapping(path = "/{id}")
     public ResponseEntity<UnitDTO> getUnitById(@PathVariable("id") Long id){
         Unit unit = unitRepository.findById(id).orElse(null);
-        return unit == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(unitModelAssembler.toModel(unit));
+        return unit == null
+                ? ResponseEntity.notFound().build()
+                : ResponseEntity.ok(unitModelAssembler.toModel(unit));
     }
 }

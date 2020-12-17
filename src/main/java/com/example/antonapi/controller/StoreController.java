@@ -29,7 +29,10 @@ public class StoreController {
 
     @GetMapping(path = "/{id}")
     public ResponseEntity<StoreDTO> getStoreById(@PathVariable("id") Long id){
-        return ResponseEntity.ok(storeModelAssembler.toModel(storeRepository.getOne(id)));
+        Store foundStore = storeRepository.findById(id).orElse(null);
+        return foundStore == null
+                ? ResponseEntity.notFound().build()
+                : ResponseEntity.ok(storeModelAssembler.toModel(storeRepository.getOne(id)));
     }
 
     @PostMapping
@@ -40,8 +43,10 @@ public class StoreController {
     }
 
     @DeleteMapping(path = "/{id}")
-    public ResponseEntity.HeadersBuilder<?> removeProduct(@PathVariable("id") Long id) {
+    public ResponseEntity<?> removeProduct(@PathVariable("id") Long id) {
+        if(!storeRepository.existsById(id))
+            return ResponseEntity.notFound().build();
         storeRepository.deleteById(id);
-        return ResponseEntity.noContent();
+        return ResponseEntity.noContent().build();
     }
 }
