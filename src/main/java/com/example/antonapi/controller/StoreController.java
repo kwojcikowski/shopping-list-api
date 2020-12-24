@@ -12,6 +12,8 @@ import org.springframework.hateoas.CollectionModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
+
 @RepositoryRestController
 @CrossOrigin
 @RequiredArgsConstructor
@@ -32,18 +34,20 @@ public class StoreController {
         Store foundStore = storeRepository.findById(id).orElse(null);
         return foundStore == null
                 ? ResponseEntity.notFound().build()
-                : ResponseEntity.ok(storeModelAssembler.toModel(storeRepository.getOne(id)));
+                : ResponseEntity.ok(storeModelAssembler.toModel(foundStore));
     }
 
     @PostMapping
-    public ResponseEntity<StoreDTO> addProduct(@RequestBody StoreDTO requestStore) {
+    public ResponseEntity<StoreDTO> addStore(@RequestBody StoreDTO requestStore) {
         Store mapperStore = modelMapper.map(requestStore, Store.class);
         Store addedStore = storeRepository.saveAndFlush(mapperStore);
-        return ResponseEntity.ok(storeModelAssembler.toModel(addedStore));
+        StoreDTO returnStoreDTO = storeModelAssembler.toModel(addedStore);
+        return ResponseEntity.created(URI.create(returnStoreDTO.getLink("self").get().getHref()))
+                .body(returnStoreDTO);
     }
 
     @DeleteMapping(path = "/{id}")
-    public ResponseEntity<?> removeProduct(@PathVariable("id") Long id) {
+    public ResponseEntity<?> removeStore(@PathVariable("id") Long id) {
         if(!storeRepository.existsById(id))
             return ResponseEntity.notFound().build();
         storeRepository.deleteById(id);
