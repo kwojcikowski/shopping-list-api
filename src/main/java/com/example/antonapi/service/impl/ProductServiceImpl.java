@@ -32,16 +32,10 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Product findProduct(Long id) {
-        return productRepository.findProductById(id);
-    }
-
-    @Override
-    public Product addProduct(Product product) throws ProductException {
-        Product existingProduct = productRepository.findProductByName(product.getName());
-        if(existingProduct == null)
-            return productRepository.saveAndFlush(product);
-        throw new ProductException("Unable to add product: Product with name " + product.getName() + " already exists.");
+    public Product findProduct(Long id) throws ProductException {
+        if(productRepository.existsById(id))
+            return productRepository.findProductById(id);
+        throw new ProductException("Unable to fetch product: Product with id " + id + " does not exist.");
     }
 
     @Override
@@ -53,32 +47,28 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Product registerNewProduct(ProductDTO productDTO) throws ProductException, IOException {
-        if(productDTO.getId() != null)
+    public Product registerNewProduct(Product product, String imageUrl) throws ProductException, IOException {
+        if(product.getId() != null)
             throw new ProductException("Unable to register product: Product must not have an ID.");
-        if(productRepository.findProductByName(productDTO.getName()) != null)
+        if(productRepository.findProductByName(product.getName()) != null)
             throw new ProductException("Unable to register product: Product with name "
-                    + productDTO.getName()+ " already exists.");
+                    + product.getName()+ " already exists.");
 
         //Image valid to save, so generate image from given URL
         //Extract image data
-        String urlString = productDTO.getImage();
-        String fileType = urlString.substring(urlString.lastIndexOf('.'));
+        String fileType = imageUrl.substring(imageUrl.lastIndexOf('.'));
 
         //Find src/main/resources/img folder
         Path path = FileSystems.getDefault().getPath("src", "main", "resources", "img");
-        String systemFriendlyProductName = productDTO.getName().replaceAll(" ", "_").replaceAll("[^a-zA-Z_]", "");
+        String systemFriendlyProductName = product.getName().replaceAll(" ", "_").replaceAll("[^a-zA-Z_]", "");
         String imagePath = path.toAbsolutePath().toString() + File.separator +
                 systemFriendlyProductName + fileType;
 
-        File image = ImagesTools.saveImageFromURL(urlString, imagePath);
+        File image = ImagesTools.saveImageFromURL(imageUrl, imagePath);
         File thumbImage = ImagesTools.generateImageThumbnail(image);
 
-        ModelMapper modelMapper = new ModelMapper();
-        Product productFromDTO = modelMapper.map(productDTO, Product.class);
-        productFromDTO.setImage(image);
-        productFromDTO.setThumbImage(thumbImage);
-
-        return productFromDTO;
+        product.setImage(image);
+        product.setThumbImage(thumbImage);
+        return productRepository.saveAndFlush(product);
     }
 }

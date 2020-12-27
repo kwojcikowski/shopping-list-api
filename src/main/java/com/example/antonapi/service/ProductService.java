@@ -6,11 +6,11 @@ import com.example.antonapi.service.dto.ProductDTO;
 import com.example.antonapi.service.exception.ProductException;
 
 import java.io.IOException;
+import java.util.Optional;
 
 public interface ProductService {
     Iterable<Product> getAllProducts();
-    Product findProduct(Long id);
-    Product addProduct(Product product) throws ProductException;
+    Product findProduct(Long id) throws ProductException;
     void deleteProductById(Long id) throws ProductException;
-    Product registerNewProduct(ProductDTO productDTO) throws ProductException, IOException;
+    Product registerNewProduct(Product product, String imageUrl) throws ProductException, IOException;
 }
