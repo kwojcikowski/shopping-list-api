@@ -2,6 +2,7 @@ package com.example.antonapi.service.dto;
 
 import lombok.*;
 import org.springframework.hateoas.RepresentationModel;
+import org.springframework.hateoas.server.core.Relation;
 
 import java.math.BigDecimal;
 
@@ -10,6 +11,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Relation(itemRelation = "cartItem", collectionRelation = "cartItems")
 public class CartItemDTO extends RepresentationModel<CartItemDTO> {
     private Long id;
     @NonNull
