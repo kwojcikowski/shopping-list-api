@@ -12,6 +12,10 @@ import org.springframework.hateoas.CollectionModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
+import java.util.List;
+import java.util.stream.Collectors;
+
 @RepositoryRestController
 @CrossOrigin
 @RequiredArgsConstructor
@@ -29,19 +33,36 @@ public class StoreSectionController {
 
     @GetMapping(path = "/{id}")
     public ResponseEntity<StoreSectionDTO> getStoreSectionById(@PathVariable("id") Long id){
-        return ResponseEntity.ok(storeSectionModelAssembler.toModel(storeSectionRepository.getOne(id)));
+        StoreSection foundStoreSection = storeSectionRepository.findById(id).orElse(null);
+        return foundStoreSection == null
+                ? ResponseEntity.notFound().build()
+                : ResponseEntity.ok(storeSectionModelAssembler.toModel(foundStoreSection));
     }
 
     @PostMapping
     public ResponseEntity<StoreSectionDTO> addStoreSection(@RequestBody StoreSectionDTO requestStoreSection) {
         StoreSection mappedStoreSection = modelMapper.map(requestStoreSection, StoreSection.class);
         StoreSection addedStoreSection = storeSectionRepository.saveAndFlush(mappedStoreSection);
-        return ResponseEntity.ok(storeSectionModelAssembler.toModel(addedStoreSection));
+        StoreSectionDTO returnStoreSection = storeSectionModelAssembler.toModel(addedStoreSection);
+        return ResponseEntity.created(URI.create(returnStoreSection.getLink("self").get().getHref()))
+                .body(returnStoreSection);
+    }
+
+    @PatchMapping
+    public ResponseEntity<?> updateStoreSections(@RequestBody List<StoreSectionDTO> requestStoreSections) {
+        storeSectionRepository.saveAll(
+                requestStoreSections.stream()
+                        .map(storeSectionDTO -> modelMapper.map(storeSectionDTO, StoreSection.class))
+                        .collect(Collectors.toList()));
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping(path = "/{id}")
-    public ResponseEntity.HeadersBuilder<?> removeStoreSection(@PathVariable("id") Long id) {
-        storeSectionRepository.deleteById(id);
-        return ResponseEntity.noContent();
+    public ResponseEntity<?>  removeStoreSection(@PathVariable("id") Long id) {
+        if(storeSectionRepository.existsById(id)) {
+            storeSectionRepository.deleteById(id);
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.notFound().build();
     }
 }
