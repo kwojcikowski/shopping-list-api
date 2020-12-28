@@ -3,12 +3,14 @@ package com.example.antonapi.service.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 import org.springframework.hateoas.RepresentationModel;
+import org.springframework.hateoas.server.core.Relation;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Relation(collectionRelation = "products", itemRelation = "product")
 public class ProductDTO extends RepresentationModel<ProductDTO> {
     private Long id;
 
