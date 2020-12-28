@@ -13,6 +13,7 @@ import org.springframework.hateoas.CollectionModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,29 +34,42 @@ public class CartItemController {
 
     @GetMapping(path = "/{id}")
     public ResponseEntity<CartItemDTO> getCartItemById(@PathVariable("id") Long id){
-        return ResponseEntity.ok(cartItemModelAssembler.toModel(cartItemService.findCartItem(id)));
+        try {
+            return ResponseEntity.ok(cartItemModelAssembler.toModel(cartItemService.findCartItem(id)));
+        } catch (CartItemException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping
     public ResponseEntity<CartItemDTO> addCartItem(@RequestBody CartItem cartItemFromRequest){
         CartItem mappedCartItem = modelMapper.map(cartItemFromRequest, CartItem.class);
         CartItem addedCartItem = cartItemService.addCartItem(mappedCartItem);
-        return ResponseEntity.ok(cartItemModelAssembler.toModel(addedCartItem));
+        CartItemDTO returnCartItem = cartItemModelAssembler.toModel(addedCartItem);
+        return ResponseEntity.created(URI.create(returnCartItem.getLink("self").get().getHref()))
+                .body(returnCartItem);
     }
 
     @PatchMapping
     public ResponseEntity<CollectionModel<CartItemDTO>> updateCartItems(@RequestBody List<CartItemDTO> cartItemsFromRequest) throws CartItemException {
-        List<CartItem> mappedCartItems = cartItemsFromRequest
-                .stream()
-                .map(cartItemDTO -> modelMapper.map(cartItemDTO, CartItem.class))
-                .collect(Collectors.toList());
-        List<CartItem> updatedCartItems = cartItemService.updateCartItems(mappedCartItems);
-        return ResponseEntity.ok(cartItemModelAssembler.toCollectionModel(updatedCartItems));
+        try {
+            cartItemService.updateCartItems(cartItemsFromRequest
+                    .stream()
+                    .map(cartItemDTO -> modelMapper.map(cartItemDTO, CartItem.class))
+                    .collect(Collectors.toList()));
+            return ResponseEntity.noContent().build();
+        } catch (CartItemException e){
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @DeleteMapping(path = "/{id}")
-    public ResponseEntity.HeadersBuilder<?> deleteCartItem(@PathVariable("id") Long id) throws CartItemException {
-        cartItemService.deleteCartItemById(id);
-        return ResponseEntity.noContent();
+    public ResponseEntity<?> deleteCartItem(@PathVariable("id") Long id) {
+        try {
+            cartItemService.deleteCartItemById(id);
+            return ResponseEntity.noContent().build();
+        }catch (CartItemException e){
+            return ResponseEntity.notFound().build();
+        }
     }
 }
