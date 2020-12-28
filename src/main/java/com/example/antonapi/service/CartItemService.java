@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface CartItemService {
     Iterable<CartItem> getAllCartItems();
-    CartItem findCartItem(Long id);
+    CartItem findCartItem(Long id) throws CartItemException;
     CartItem addCartItem(CartItem cartItem);
     List<CartItem> updateCartItems(List<CartItem> cartItems) throws CartItemException;
     void deleteCartItemById(Long id) throws CartItemException;

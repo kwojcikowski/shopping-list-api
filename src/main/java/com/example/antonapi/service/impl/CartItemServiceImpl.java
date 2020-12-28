@@ -24,8 +24,10 @@ public class CartItemServiceImpl implements CartItemService {
     }
 
     @Override
-    public CartItem findCartItem(Long id) {
-        return cartItemRepository.getOne(id);
+    public CartItem findCartItem(Long id) throws CartItemException{
+        if(cartItemRepository.existsById(id))
+            return cartItemRepository.findById(id).get();
+        throw new CartItemException("Unable to fetch cart item: Cart item with id " + id + " does not exist.");
     }
 
     @Override
@@ -45,7 +47,8 @@ public class CartItemServiceImpl implements CartItemService {
             if(item.getId() == null)
                 throw new CartItemException("Unable to update cart item: No ID provided.");
             if(!cartItemRepository.existsById(item.getId()))
-                throw new CartItemException("Unable to update cart item: Cart item does not exist.");
+                throw new CartItemException("Unable to update cart item: Cart item with id "
+                        + item.getId() + " does not exist.");
 
             CartItem updatedCartItem = cartItemRepository.saveAndFlush(item);
             updatedCartItems.add(updatedCartItem);
@@ -58,6 +61,6 @@ public class CartItemServiceImpl implements CartItemService {
         if(cartItemRepository.existsById(id))
             cartItemRepository.deleteById(id);
         else
-            throw new CartItemException("Unable to delete cart item: Cart item does not exist.");
+            throw new CartItemException("Unable to delete cart item: Cart item with id " + id + " does not exist.");
     }
 }

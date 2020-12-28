@@ -19,6 +19,20 @@ import static org.mockito.Mockito.when;
 public class TestCartItemServiceImpl {
 
     @Test
+    public void testFindCartItemByIdThrowExceptionOnNonExistingId() {
+        CartItemRepository cartItemRepository = mock(CartItemRepository.class);
+        when(cartItemRepository.existsById(1L)).thenReturn(false);
+        CartItemService service = new CartItemServiceImpl(cartItemRepository);
+
+        try{
+            service.findCartItem(1L);
+            fail("Exception should had been thrown");
+        }catch (CartItemException e){
+            assertThat(e.getMessage()).isEqualTo("Unable to fetch cart item: Cart item with id 1 does not exist.");
+        }
+    }
+
+    @Test
     public void testUpdateCartItemsNoExceptionOnCorrectCartItems(){
         //Given
         CartItemRepository cartItemRepository = mock(CartItemRepository.class);
@@ -85,14 +99,14 @@ public class TestCartItemServiceImpl {
         BigDecimal mockQuantity = mock(BigDecimal.class);
         CartItem correctCartItem = new CartItem(1L, mockProduct, mockUnit, mockQuantity);
         CartItem correctCartItem1 = new CartItem(2L, mockProduct, mockUnit, mockQuantity);
-        CartItem correctCartItem2 = new CartItem(3L, mockProduct, mockUnit, mockQuantity);
-        List<CartItem> testedCartItems = List.of(correctCartItem, correctCartItem1, correctCartItem2);
+        CartItem nonExistingCartItem = new CartItem(3L, mockProduct, mockUnit, mockQuantity);
+        List<CartItem> testedCartItems = List.of(correctCartItem, correctCartItem1, nonExistingCartItem);
         when(cartItemRepository.existsById(1L)).thenReturn(true);
         when(cartItemRepository.existsById(2L)).thenReturn(true);
         when(cartItemRepository.existsById(3L)).thenReturn(false);
         when(cartItemRepository.saveAndFlush(correctCartItem)).thenReturn(correctCartItem);
         when(cartItemRepository.saveAndFlush(correctCartItem1)).thenReturn(correctCartItem1);
-        when(cartItemRepository.saveAndFlush(correctCartItem2)).thenReturn(correctCartItem2);
+        when(cartItemRepository.saveAndFlush(nonExistingCartItem)).thenReturn(nonExistingCartItem);
         CartItemService service = new CartItemServiceImpl(cartItemRepository);
 
         //When
@@ -102,7 +116,7 @@ public class TestCartItemServiceImpl {
         //Then
             fail("Exception should had been thrown.");
         } catch (CartItemException e) {
-            assertThat(e.getMessage()).isEqualTo("Unable to update cart item: Cart item does not exist.");
+            assertThat(e.getMessage()).isEqualTo("Unable to update cart item: Cart item with id 3 does not exist.");
         }
     }
 
@@ -136,7 +150,7 @@ public class TestCartItemServiceImpl {
             fail("Exception should had been thrown.");
             //Then
         } catch (CartItemException e) {
-            assertThat(e.getMessage()).isEqualTo("Unable to delete cart item: Cart item does not exist.");
+            assertThat(e.getMessage()).isEqualTo("Unable to delete cart item: Cart item with id 1 does not exist.");
         }
     }
 }
