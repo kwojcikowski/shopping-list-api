@@ -16,6 +16,7 @@ import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.*;
+import java.net.URI;
 
 @RepositoryRestController
 @CrossOrigin
@@ -35,33 +36,52 @@ public class ProductController {
 
     @GetMapping(path = "/{id}")
     public ResponseEntity<ProductDTO> getProductById(@PathVariable("id") Long id){
-        return ResponseEntity.ok(productModelAssembler.toModel(productService.findProduct(id)));
+        try {
+            return ResponseEntity.ok(productModelAssembler.toModel(productService.findProduct(id)));
+        } catch (ProductException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping
     public ResponseEntity<ProductDTO> addProduct(@RequestBody ProductDTO requestProduct) throws IOException, ProductException {
-        Product registeredProduct = productService.registerNewProduct(requestProduct);
-        Product addedProduct = productService.addProduct(registeredProduct);
-        return ResponseEntity.ok(productModelAssembler.toModel(addedProduct));
+        String imageUrl = requestProduct.getImage();
+        Product product = modelMapper.map(requestProduct, Product.class);
+        Product registeredProduct = productService.registerNewProduct(product, imageUrl);
+        ProductDTO returnedProduct = productModelAssembler.toModel(registeredProduct);
+        return ResponseEntity.created(URI.create(returnedProduct.getLink("self").get().getHref()))
+                .body(requestProduct);
     }
 
     @DeleteMapping(path = "/{id}")
-    public ResponseEntity.HeadersBuilder<?> removeProduct(@PathVariable("id") Long id) throws ProductException {
-        productService.deleteProductById(id);
-        return ResponseEntity.noContent();
+    public ResponseEntity<ProductDTO> removeProduct(@PathVariable("id") Long id) {
+        try {
+            productService.deleteProductById(id);
+            return ResponseEntity.noContent().build();
+        }catch (ProductException e){
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @GetMapping(path = "/{productId}/image")
     public ResponseEntity<ImageDTO> getProductImage(@PathVariable("productId") Long productId) throws IOException {
-        Product product = productService.findProduct(productId);
-        ImageDTO imageDTO = ImagesTools.getImageFromLocalResources(product.getImage().getAbsolutePath());
-        return ResponseEntity.ok(imageDTO);
+        try {
+            Product product = productService.findProduct(productId);
+            ImageDTO imageDTO = ImagesTools.getImageFromLocalResources(product.getImage().getAbsolutePath());
+            return ResponseEntity.ok(imageDTO);
+        } catch (ProductException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @GetMapping(path = "/{productId}/thumbImage")
     public ResponseEntity<ImageDTO> getProductThumbImage(@PathVariable("productId")  Long productId) throws IOException {
-        Product product = productService.findProduct(productId);
-        ImageDTO imageDTO = ImagesTools.getImageFromLocalResources(product.getThumbImage().getAbsolutePath());
-        return ResponseEntity.ok(imageDTO);
+        try {
+            Product product = productService.findProduct(productId);
+            ImageDTO imageDTO = ImagesTools.getImageFromLocalResources(product.getThumbImage().getAbsolutePath());
+            return ResponseEntity.ok(imageDTO);
+        } catch (ProductException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }
