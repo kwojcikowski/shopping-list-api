@@ -9,6 +9,7 @@ import com.example.antonapi.service.assembler.UnitModelAssembler;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
@@ -22,13 +23,22 @@ import java.util.Optional;
 
 import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.linkWithRel;
+import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.links;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
+import static org.springframework.restdocs.payload.PayloadDocumentation.*;
+import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
+import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = UnitModelAssembler.class)
 @WebMvcTest(controllers = UnitController.class)
 @Import({UnitController.class, ModelMapperConfiguration.class})
+@AutoConfigureRestDocs(outputDir = "target/generated-snippets/units")
 public class TestUnitController {
 
     @MockBean
@@ -70,7 +80,15 @@ public class TestUnitController {
         mockMvc.perform(get("/units"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaTypes.HAL_JSON))
-                .andExpect(jsonPath("$._embedded.units", hasSize(units.size())));
+                .andExpect(jsonPath("$._embedded.units", hasSize(units.size())))
+                .andDo(document("get-all-units",
+                        preprocessResponse(prettyPrint()),
+                        responseFields(
+                            fieldWithPath("_embedded.units[].id").description("The id of a unit."),
+                            fieldWithPath("_embedded.units[].abbreviation").description("The common abbreviation representing unit."),
+                            subsectionWithPath("_embedded.units[]._links").description("Links to resources.")
+                        )
+                ));
     }
 
     @Test
@@ -92,9 +110,19 @@ public class TestUnitController {
                 .prefix(none)
                 .build();
         when(unitRepository.findById(1L)).thenReturn(java.util.Optional.ofNullable(liter));
-        mockMvc.perform(get("/units/1")).andExpect(status().isOk())
+        mockMvc.perform(get("/units/{id}", 1)).andExpect(status().isOk())
                 .andExpect(content().contentType(MediaTypes.HAL_JSON))
-                .andExpect(jsonPath("$._links.self.href", endsWith("/units/1")));
+                .andDo(document("get-unit-by-id",
+                        preprocessResponse(prettyPrint()),
+                        links(linkWithRel("self").description("Link with a self reference to a unit.")),
+                        pathParameters(
+                            parameterWithName("id").description("The id of unit to fetch.")
+                        ),
+                        responseFields(
+                            fieldWithPath("id").description("The id of a unit."),
+                            fieldWithPath("abbreviation").description("The common abbreviation representing unit."),
+                            subsectionWithPath("_links").description("Links to resources.")
+                )));
     }
 
     @Test

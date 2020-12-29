@@ -1,0 +1,39 @@
+= Shopping List API Documentation
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 4
+:sectlinks:
+
+== Unit Service
+
+Example requests and responses for the Unit Service.
+
+=== Get all units
+
+Response body fields
+include::{snippets}/units/get-all-units/response-fields.adoc[]
+
+Sample request
+include::{snippets}/units/get-all-units/http-request.adoc[]
+
+Sample response
+include::{snippets}/units/get-all-units/http-response.adoc[]
+
+=== Get unit by id
+
+Path parameters:
+include::{snippets}/units/get-unit-by-id/path-parameters.adoc[]
+
+Response body fields
+include::{snippets}/units/get-unit-by-id/response-fields.adoc[]
+
+Response body links
+include::{snippets}/units/get-unit-by-id/links.adoc[]
+
+Sample request
+include::{snippets}/units/get-unit-by-id/http-request.adoc[]
+
+Sample response
+include::{snippets}/units/get-unit-by-id/http-response.adoc[]
