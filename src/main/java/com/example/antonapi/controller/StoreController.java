@@ -4,6 +4,9 @@ import com.example.antonapi.model.Store;
 import com.example.antonapi.repository.StoreRepository;
 import com.example.antonapi.service.assembler.StoreModelAssembler;
 import com.example.antonapi.service.dto.StoreDTO;
+import com.example.antonapi.service.tools.normalizer.Alphabet;
+import com.example.antonapi.service.tools.normalizer.NormalizationException;
+import com.example.antonapi.service.tools.normalizer.StringNormalizer;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -38,8 +41,16 @@ public class StoreController {
     }
 
     @PostMapping
-    public ResponseEntity<StoreDTO> addStore(@RequestBody StoreDTO requestStore) {
+    public ResponseEntity<?> addStore(@RequestBody StoreDTO requestStore) {
         Store mapperStore = modelMapper.map(requestStore, Store.class);
+        Alphabet activeAlphabet = Alphabet.POLISH;
+        try{
+            String normalizedName = StringNormalizer.normalize(mapperStore.getName(), activeAlphabet);
+            mapperStore.setUrlFriendlyName(normalizedName.replace(' ', '-'));
+        }catch (NormalizationException e){
+            return ResponseEntity.badRequest().body("Unable to create store: Name '" + mapperStore.getName()
+                    + "' does not match the alphabet " + activeAlphabet.name() + ".");
+        }
         Store addedStore = storeRepository.saveAndFlush(mapperStore);
         StoreDTO returnStoreDTO = storeModelAssembler.toModel(addedStore);
         return ResponseEntity.created(URI.create(returnStoreDTO.getLink("self").get().getHref()))
