@@ -80,3 +80,52 @@ Sample request
 include::{snippets}/sections/remove-section/http-request.adoc[]
 Sample response
 include::{snippets}/sections/remove-section/http-response.adoc[]
+
+
+== Store Service
+Example requests and responses for the Store Service.
+
+=== Get all stores
+
+Response body fields
+include::{snippets}/stores/get-all-stores/response-fields.adoc[]
+Sample request
+include::{snippets}/stores/get-all-stores/http-request.adoc[]
+Sample response
+include::{snippets}/stores/get-all-stores/http-response.adoc[]
+
+=== Get store by id
+
+Path parameters:
+include::{snippets}/stores/get-store-by-id/path-parameters.adoc
+Response body fields
+include::{snippets}/stores/get-store-by-id/response-fields.adoc[]
+Response body links
+include::{snippets}/stores/get-store-by-id/links.adoc[]
+Sample request
+include::{snippets}/stores/get-store-by-id/http-request.adoc[]
+Sample response
+include::{snippets}/stores/get-store-by-id/http-response.adoc[]
+
+
+=== Add store
+
+Request body fields
+include::{snippets}/stores/add-store/request-fields.adoc[]
+Response body fields
+include::{snippets}/stores/add-store/response-fields.adoc[]
+Response body links
+include::{snippets}/stores/add-store/links.adoc[]
+Sample request
+include::{snippets}/stores/add-store/http-request.adoc[]
+Sample response
+include::{snippets}/stores/add-store/response-body.adoc[]
+
+=== Remove store
+
+Path parameters:
+include::{snippets}/stores/remove-store/path-parameters.adoc[]
+Sample request
+include::{snippets}/stores/remove-store/http-request.adoc[]
+Sample response
+include::{snippets}/stores/remove-store/http-response.adoc[]
