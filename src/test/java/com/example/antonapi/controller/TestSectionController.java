@@ -4,16 +4,10 @@ import com.example.antonapi.TestModelMapperConfiguration;
 import com.example.antonapi.model.Section;
 import com.example.antonapi.repository.SectionRepository;
 import com.example.antonapi.service.assembler.SectionModelAssembler;
-import com.example.antonapi.service.dto.SectionDTO;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
+import com.example.antonapi.service.tools.JsonStringFormatter;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -32,13 +26,13 @@ import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.linkWithRel;
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.links;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*;
-import static org.springframework.restdocs.request.RequestDocumentation.*;
+import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
+import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = {SectionModelAssembler.class})
@@ -52,8 +46,6 @@ public class TestSectionController {
 
     @Autowired
     private MockMvc mockMvc;
-    @Autowired
-    private ModelMapper modelMapper;
 
     @Test
     public void testGetAllSectionsSuccessful() throws Exception {
@@ -114,10 +106,8 @@ public class TestSectionController {
 
     @Test
     public void testAddSectionSuccessful() throws Exception {
-        String sampleSection = "{\n\"name\": \"Section 1\"\n}";
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        JsonElement je = JsonParser.parseString(sampleSection);
-        String postBody = gson.toJson(je);
+        String sampleSection = "{\"name\": \"Section 1\"}";
+        String postBody = JsonStringFormatter.prettify(sampleSection);
         when(sectionRepository.saveAndFlush(Mockito.any(Section.class))).thenAnswer(s -> {
             Section addedSection = s.getArgument(0);
             addedSection.setId(1L);
