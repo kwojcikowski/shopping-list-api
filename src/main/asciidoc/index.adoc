@@ -14,10 +14,8 @@ Example requests and responses for the Unit Service.
 
 Response body fields
 include::{snippets}/units/get-all-units/response-fields.adoc[]
-
 Sample request
 include::{snippets}/units/get-all-units/http-request.adoc[]
-
 Sample response
 include::{snippets}/units/get-all-units/http-response.adoc[]
 
@@ -25,15 +23,60 @@ include::{snippets}/units/get-all-units/http-response.adoc[]
 
 Path parameters:
 include::{snippets}/units/get-unit-by-id/path-parameters.adoc[]
-
 Response body fields
 include::{snippets}/units/get-unit-by-id/response-fields.adoc[]
-
 Response body links
 include::{snippets}/units/get-unit-by-id/links.adoc[]
-
 Sample request
 include::{snippets}/units/get-unit-by-id/http-request.adoc[]
-
 Sample response
 include::{snippets}/units/get-unit-by-id/http-response.adoc[]
+
+== Section Service
+
+Example requests and responses for the Unit Service.
+
+=== Get all sections
+
+Response body fields
+include::{snippets}/sections/get-all-sections/response-fields.adoc[]
+Sample request
+include::{snippets}/sections/get-all-sections/http-request.adoc[]
+Sample response
+include::{snippets}/sections/get-all-sections/http-response.adoc[]
+
+=== Get section by id
+
+Path parameters:
+include::{snippets}/sections/get-section-by-id/path-parameters.adoc[]
+Response body fields
+include::{snippets}/sections/get-section-by-id/response-fields.adoc[]
+Response body links
+include::{snippets}/sections/get-section-by-id/links.adoc[]
+Sample request
+include::{snippets}/sections/get-section-by-id/http-request.adoc[]
+Sample response
+include::{snippets}/sections/get-section-by-id/http-response.adoc[]
+
+
+=== Add section
+
+Request body fields
+include::{snippets}/sections/add-section/request-fields.adoc[]
+Response body fields
+include::{snippets}/sections/add-section/response-fields.adoc[]
+Response body links
+include::{snippets}/sections/add-section/links.adoc[]
+Sample request
+include::{snippets}/sections/add-section/http-request.adoc[]
+Sample response
+include::{snippets}/sections/add-section/response-body.adoc[]
+
+=== Remove section
+
+Path parameters:
+include::{snippets}/sections/remove-section/path-parameters.adoc[]
+Sample request
+include::{snippets}/sections/remove-section/http-request.adoc[]
+Sample response
+include::{snippets}/sections/remove-section/http-response.adoc[]

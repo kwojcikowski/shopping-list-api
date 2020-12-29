@@ -6,11 +6,16 @@ import com.example.antonapi.repository.SectionRepository;
 import com.example.antonapi.service.assembler.SectionModelAssembler;
 import com.example.antonapi.service.dto.SectionDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
@@ -24,8 +29,14 @@ import java.util.Optional;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.linkWithRel;
+import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.links;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
+import static org.springframework.restdocs.payload.PayloadDocumentation.*;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*;
+import static org.springframework.restdocs.request.RequestDocumentation.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -33,6 +44,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ContextConfiguration(classes = {SectionModelAssembler.class})
 @WebMvcTest(controllers = SectionController.class)
 @Import({SectionController.class, TestModelMapperConfiguration.class})
+@AutoConfigureRestDocs(outputDir = "target/generated-snippets/sections")
 public class TestSectionController {
 
     @MockBean
@@ -58,7 +70,14 @@ public class TestSectionController {
         mockMvc.perform(get("/sections"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaTypes.HAL_JSON))
-                .andExpect(jsonPath("$._embedded.sections", hasSize(sections.size())));
+                .andExpect(jsonPath("$._embedded.sections", hasSize(sections.size())))
+                .andDo(document("get-all-sections",
+                        preprocessResponse(prettyPrint()),
+                        responseFields(
+                                fieldWithPath("_embedded.sections[].id").description("The id of a section."),
+                                fieldWithPath("_embedded.sections[].name").description("Name of a section."),
+                                subsectionWithPath("_embedded.sections[]._links").description("Links to connected resources")
+                        )));
     }
 
     @Test
@@ -68,9 +87,22 @@ public class TestSectionController {
                 .name("Section 1")
                 .build();
         when(sectionRepository.findById(1L)).thenReturn(Optional.ofNullable(section1));
-        mockMvc.perform(get("/sections/1"))
+        mockMvc.perform(get("/sections/{id}", 1))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaTypes.HAL_JSON));
+                .andExpect(content().contentType(MediaTypes.HAL_JSON))
+                .andDo(document("get-section-by-id",
+                        preprocessResponse(prettyPrint()),
+                        pathParameters(
+                                parameterWithName("id").description("The id of a section to fetch.")
+                        ),
+                        responseFields(
+                                fieldWithPath("id").description("The id of a section."),
+                                fieldWithPath("name").description("Name of a section."),
+                                subsectionWithPath("_links").description("Links to connected resources")
+                        ),
+                        links(
+                                linkWithRel("self").description("Link with a self reference to a section.")
+                        )));
     }
 
     @Test
@@ -82,12 +114,10 @@ public class TestSectionController {
 
     @Test
     public void testAddSectionSuccessful() throws Exception {
-        Section section1 = Section.builder()
-                .id(1L)
-                .name("Section 1")
-                .build();
-        SectionDTO sectionDTO = modelMapper.map(section1, SectionDTO.class);
-        String postBody = new ObjectMapper().writeValueAsString(sectionDTO);
+        String sampleSection = "{\n\"name\": \"Section 1\"\n}";
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        JsonElement je = JsonParser.parseString(sampleSection);
+        String postBody = gson.toJson(je);
         when(sectionRepository.saveAndFlush(Mockito.any(Section.class))).thenAnswer(s -> {
             Section addedSection = s.getArgument(0);
             addedSection.setId(1L);
@@ -97,14 +127,32 @@ public class TestSectionController {
                 .contentType(MediaTypes.HAL_JSON)
                 .content(postBody))
                 .andExpect(status().isCreated())
-                .andExpect(content().contentType(MediaTypes.HAL_JSON));
+                .andExpect(content().contentType(MediaTypes.HAL_JSON))
+                .andDo(document("add-section",
+                        preprocessResponse(prettyPrint()),
+                        requestFields(
+                                fieldWithPath("name").description("Name of a section")
+                        ),
+                        responseFields(
+                                fieldWithPath("id").description("The id of a section."),
+                                fieldWithPath("name").description("Name of a section."),
+                                subsectionWithPath("_links").description("Links to connected resources")
+                        ),
+                        links(
+                                linkWithRel("self").description("Link with a self reference to a section.")
+                        )));
     }
 
     @Test
     public void testRemoveSectionSuccessful() throws Exception {
         when(sectionRepository.existsById(1L)).thenReturn(true);
-        mockMvc.perform(delete("/sections/1"))
-                .andExpect(status().isNoContent());
+        mockMvc.perform(delete("/sections/{id}", 1))
+                .andExpect(status().isNoContent())
+                .andDo(document("remove-section",
+                        preprocessResponse(prettyPrint()),
+                        pathParameters(
+                                parameterWithName("id").description("Id of a section to remove")
+                        )));
     }
 
     @Test
