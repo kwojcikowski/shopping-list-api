@@ -17,6 +17,5 @@ public class Store {
     @NonNull
     private String name;
 
-    @NonNull
     private String urlFriendlyName;
 }
