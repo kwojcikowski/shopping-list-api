@@ -12,6 +12,8 @@ import org.springframework.hateoas.server.core.Relation;
 @Builder
 @Relation(collectionRelation = "products", itemRelation = "product")
 public class ProductDTO extends RepresentationModel<ProductDTO> {
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Long id;
 
     @NonNull
@@ -23,7 +25,7 @@ public class ProductDTO extends RepresentationModel<ProductDTO> {
 
     //Used for handling incoming image urls
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private String image;
+    private String imageUrl;
 
     /*
     Links
