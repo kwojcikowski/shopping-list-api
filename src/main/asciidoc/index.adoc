@@ -178,3 +178,73 @@ Sample request
 include::{snippets}/store-sections/remove-store-section/http-request.adoc[]
 Sample response
 include::{snippets}/store-sections/remove-store-section/http-response.adoc[]
+
+
+== Product Service
+Example requests and responses for the Product Service.
+
+=== Get all products
+
+Response body fields
+include::{snippets}/products/get-all-products/response-fields.adoc[]
+Sample request
+include::{snippets}/products/get-all-products/http-request.adoc[]
+Sample response
+include::{snippets}/products/get-all-products/http-response.adoc[]
+
+=== Get product by id
+
+Path parameters:
+include::{snippets}/products/get-product-by-id/path-parameters.adoc[]
+Response body fields
+include::{snippets}/products/get-product-by-id/response-fields.adoc[]
+Response body links
+include::{snippets}/products/get-product-by-id/links.adoc[]
+Sample request
+include::{snippets}/products/get-product-by-id/http-request.adoc[]
+Sample response
+include::{snippets}/products/get-product-by-id/http-response.adoc[]
+
+=== Get product image
+
+Path parameters:
+include::{snippets}/products/get-product-image/path-parameters.adoc[]
+Response body fields
+include::{snippets}/products/get-product-image/response-fields.adoc[]
+Sample request
+include::{snippets}/products/get-product-image/http-request.adoc[]
+Sample response
+include::{snippets}/products/get-product-image/http-response.adoc[]
+
+=== Get product thumbnail image
+
+Path parameters:
+include::{snippets}/products/get-product-thumb-image/path-parameters.adoc[]
+Response body fields
+include::{snippets}/products/get-product-thumb-image/response-fields.adoc[]
+Sample request
+include::{snippets}/products/get-product-thumb-image/http-request.adoc[]
+Sample response
+include::{snippets}/products/get-product-thumb-image/http-response.adoc[]
+
+=== Add product
+
+Request body fields
+include::{snippets}/products/add-product/request-fields.adoc[]
+Response body fields
+include::{snippets}/products/add-product/response-fields.adoc[]
+Response body links
+include::{snippets}/products/add-product/links.adoc[]
+Sample request
+include::{snippets}/products/add-product/http-request.adoc[]
+Sample response
+include::{snippets}/products/add-product/response-body.adoc[]
+
+=== Remove product
+
+Path parameters:
+include::{snippets}/products/remove-product/path-parameters.adoc[]
+Sample request
+include::{snippets}/products/remove-product/http-request.adoc[]
+Sample response
+include::{snippets}/products/remove-product/http-response.adoc[]
