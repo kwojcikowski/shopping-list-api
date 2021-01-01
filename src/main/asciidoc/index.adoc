@@ -97,7 +97,7 @@ include::{snippets}/stores/get-all-stores/http-response.adoc[]
 === Get store by id
 
 Path parameters:
-include::{snippets}/stores/get-store-by-id/path-parameters.adoc
+include::{snippets}/stores/get-store-by-id/path-parameters.adoc[]
 Response body fields
 include::{snippets}/stores/get-store-by-id/response-fields.adoc[]
 Response body links
@@ -129,3 +129,52 @@ Sample request
 include::{snippets}/stores/remove-store/http-request.adoc[]
 Sample response
 include::{snippets}/stores/remove-store/http-response.adoc[]
+
+== Store Section Service
+Example requests and responses for the Store Section relation. The essence of this relation is to determine
+the order of sections in a given store.
+
+=== Get all store sections
+
+Response body fields
+include::{snippets}/store-sections/get-all-store-sections/response-fields.adoc[]
+Sample request
+include::{snippets}/store-sections/get-all-store-sections/http-request.adoc[]
+Sample response
+include::{snippets}/store-sections/get-all-store-sections/http-response.adoc[]
+
+=== Get store section by id
+
+Path parameters:
+include::{snippets}/store-sections/get-store-section-by-id/path-parameters.adoc[]
+Response body fields
+include::{snippets}/store-sections/get-store-section-by-id/response-fields.adoc[]
+Response body links
+include::{snippets}/store-sections/get-store-section-by-id/links.adoc[]
+Sample request
+include::{snippets}/store-sections/get-store-section-by-id/http-request.adoc[]
+Sample response
+include::{snippets}/store-sections/get-store-section-by-id/http-response.adoc[]
+
+
+=== Add store section
+
+Request body fields
+include::{snippets}/store-sections/add-store-section/request-fields.adoc[]
+Response body fields
+include::{snippets}/store-sections/add-store-section/response-fields.adoc[]
+Response body links
+include::{snippets}/store-sections/add-store-section/links.adoc[]
+Sample request
+include::{snippets}/store-sections/add-store-section/http-request.adoc[]
+Sample response
+include::{snippets}/store-sections/add-store-section/response-body.adoc[]
+
+=== Remove store section
+
+Path parameters:
+include::{snippets}/store-sections/remove-store-section/path-parameters.adoc[]
+Sample request
+include::{snippets}/store-sections/remove-store-section/http-request.adoc[]
+Sample response
+include::{snippets}/store-sections/remove-store-section/http-response.adoc[]
