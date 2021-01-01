@@ -45,12 +45,12 @@ public class ProductController {
 
     @PostMapping
     public ResponseEntity<ProductDTO> addProduct(@RequestBody ProductDTO requestProduct) throws IOException, ProductException {
-        String imageUrl = requestProduct.getImage();
+        String imageUrl = requestProduct.getImageUrl();
         Product product = modelMapper.map(requestProduct, Product.class);
         Product registeredProduct = productService.registerNewProduct(product, imageUrl);
         ProductDTO returnedProduct = productModelAssembler.toModel(registeredProduct);
         return ResponseEntity.created(URI.create(returnedProduct.getLink("self").get().getHref()))
-                .body(requestProduct);
+                .body(returnedProduct);
     }
 
     @DeleteMapping(path = "/{id}")
