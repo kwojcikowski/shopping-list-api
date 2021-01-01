@@ -6,14 +6,12 @@ import com.example.antonapi.repository.UnitRepository;
 import com.example.antonapi.service.dto.*;
 import org.junit.jupiter.api.Test;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class TestModelToDTOMapping {
 
@@ -137,7 +135,7 @@ public class TestModelToDTOMapping {
                 () -> assertThat(expected.getName()).isEqualTo("Milk"),
                 () -> assertThat(expected.getDefaultUnit()).isNotNull(),
                 () -> assertThat(expected.getSection()).isNotNull(),
-                () -> assertThat(expected.getImage()).isNull());
+                () -> assertThat(expected.getImageUrl()).isNull());
     }
 
     @Test
