@@ -42,7 +42,7 @@ public class CartItemController {
     }
 
     @PostMapping
-    public ResponseEntity<CartItemDTO> addCartItem(@RequestBody CartItem cartItemFromRequest){
+    public ResponseEntity<CartItemDTO> addCartItem(@RequestBody CartItemDTO cartItemFromRequest){
         CartItem mappedCartItem = modelMapper.map(cartItemFromRequest, CartItem.class);
         CartItem addedCartItem = cartItemService.addCartItem(mappedCartItem);
         CartItemDTO returnCartItem = cartItemModelAssembler.toModel(addedCartItem);
@@ -51,7 +51,7 @@ public class CartItemController {
     }
 
     @PatchMapping
-    public ResponseEntity<CollectionModel<CartItemDTO>> updateCartItems(@RequestBody List<CartItemDTO> cartItemsFromRequest) throws CartItemException {
+    public ResponseEntity<CartItemDTO> updateCartItems(@RequestBody List<CartItemDTO> cartItemsFromRequest) throws CartItemException {
         try {
             cartItemService.updateCartItems(cartItemsFromRequest
                     .stream()
