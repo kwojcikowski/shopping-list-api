@@ -248,3 +248,60 @@ Sample request
 include::{snippets}/products/remove-product/http-request.adoc[]
 Sample response
 include::{snippets}/products/remove-product/http-response.adoc[]
+
+
+== Cart Item Service
+Example requests and responses for the Cart Item service.
+
+=== Get all cart items
+
+Response body fields
+include::{snippets}/cart-items/get-all-cart-items/response-fields.adoc[]
+Sample request
+include::{snippets}/cart-items/get-all-cart-items/http-request.adoc[]
+Sample response
+include::{snippets}/cart-items/get-all-cart-items/http-response.adoc[]
+
+=== Get cart item by id
+
+Path parameters:
+include::{snippets}/cart-items/get-cart-item-by-id/path-parameters.adoc[]
+Response body fields
+include::{snippets}/cart-items/get-cart-item-by-id/response-fields.adoc[]
+Response body links
+include::{snippets}/cart-items/get-cart-item-by-id/links.adoc[]
+Sample request
+include::{snippets}/cart-items/get-cart-item-by-id/http-request.adoc[]
+Sample response
+include::{snippets}/cart-items/get-cart-item-by-id/http-response.adoc[]
+
+=== Add cart item
+
+Request body fields
+include::{snippets}/cart-items/add-cart-item/request-fields.adoc[]
+Response body fields
+include::{snippets}/cart-items/add-cart-item/response-fields.adoc[]
+Response body links
+include::{snippets}/cart-items/add-cart-item/links.adoc[]
+Sample request
+include::{snippets}/cart-items/add-cart-item/http-request.adoc[]
+Sample response
+include::{snippets}/cart-items/add-cart-item/response-body.adoc[]
+
+=== Update cart items
+
+Request body fields
+include::{snippets}/cart-items/update-cart-items/request-fields.adoc[]
+Sample request
+include::{snippets}/cart-items/update-cart-items/http-request.adoc[]
+Sample response
+include::{snippets}/cart-items/update-cart-items/response-body.adoc[]
+
+=== Remove cart item
+
+Path parameters:
+include::{snippets}/cart-items/remove-cart-item/path-parameters.adoc[]
+Sample request
+include::{snippets}/cart-items/remove-cart-item/http-request.adoc[]
+Sample response
+include::{snippets}/cart-items/remove-cart-item/http-response.adoc[]
