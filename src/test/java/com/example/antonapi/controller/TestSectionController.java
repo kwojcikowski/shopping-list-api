@@ -4,7 +4,6 @@ import com.example.antonapi.TestModelMapperConfiguration;
 import com.example.antonapi.model.Section;
 import com.example.antonapi.repository.SectionRepository;
 import com.example.antonapi.service.assembler.SectionModelAssembler;
-import com.example.antonapi.service.tools.JsonStringFormatter;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -27,8 +26,7 @@ import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.li
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.links;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
@@ -106,8 +104,7 @@ public class TestSectionController {
 
     @Test
     public void testAddSectionSuccessful() throws Exception {
-        String sampleSection = "{\"name\": \"Section 1\"}";
-        String postBody = JsonStringFormatter.prettify(sampleSection);
+        String postBody = "{\"name\": \"Section 1\"}";
         when(sectionRepository.saveAndFlush(Mockito.any(Section.class))).thenAnswer(s -> {
             Section addedSection = s.getArgument(0);
             addedSection.setId(1L);
@@ -119,6 +116,7 @@ public class TestSectionController {
                 .andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaTypes.HAL_JSON))
                 .andDo(document("add-section",
+                        preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
                         requestFields(
                                 fieldWithPath("name").description("Name of a section")

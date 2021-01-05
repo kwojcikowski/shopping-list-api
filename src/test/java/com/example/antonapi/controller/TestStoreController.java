@@ -4,7 +4,6 @@ import com.example.antonapi.TestModelMapperConfiguration;
 import com.example.antonapi.model.Store;
 import com.example.antonapi.repository.StoreRepository;
 import com.example.antonapi.service.assembler.StoreModelAssembler;
-import com.example.antonapi.service.tools.JsonStringFormatter;
 import com.example.antonapi.service.tools.normalizer.Alphabet;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -155,8 +154,7 @@ public class TestStoreController {
 
     @Test
     public void testAddStoreReturnBadRequestOnStoreNameNotMatchingAlphabet() throws Exception {
-        String sampleStore = "{\"name\": \"Store Ĉ\"}";
-        String postBody = JsonStringFormatter.prettify(sampleStore);
+        String postBody = "{\"name\": \"Store Ĉ\"}";
         when(storeRepository.saveAndFlush(Mockito.any(Store.class))).thenAnswer(s -> {
             Store addedStore = s.getArgument(0);
             addedStore.setId(1L);
