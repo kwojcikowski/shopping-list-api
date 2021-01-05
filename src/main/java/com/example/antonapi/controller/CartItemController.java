@@ -51,7 +51,7 @@ public class CartItemController {
     }
 
     @PatchMapping
-    public ResponseEntity<CartItemDTO> updateCartItems(@RequestBody List<CartItemDTO> cartItemsFromRequest) throws CartItemException {
+    public ResponseEntity<CartItemDTO> updateCartItems(@RequestBody List<CartItemDTO> cartItemsFromRequest) {
         try {
             cartItemService.updateCartItems(cartItemsFromRequest
                     .stream()
