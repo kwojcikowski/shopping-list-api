@@ -1,12 +1,8 @@
 package com.example.antonapi.config;
-import com.example.antonapi.model.CartItem;
-import com.example.antonapi.model.Unit;
 import com.example.antonapi.repository.UnitRepository;
-import com.example.antonapi.service.dto.UnitDTO;
 import com.example.antonapi.service.tools.SmartUnits;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

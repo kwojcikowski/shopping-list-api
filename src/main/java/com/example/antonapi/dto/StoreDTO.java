@@ -1,4 +1,4 @@
-package com.example.antonapi.service.dto;
+package com.example.antonapi.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
@@ -10,13 +10,15 @@ import org.springframework.hateoas.server.core.Relation;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Relation(collectionRelation = "sections", itemRelation = "section")
-public class SectionDTO extends RepresentationModel<SectionDTO> {
+@Relation(collectionRelation = "stores", itemRelation = "store")
+public class StoreDTO extends RepresentationModel<StoreDTO> {
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Long id;
     @NonNull
     private String name;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String urlFriendlyName;
 
     /*
     Links

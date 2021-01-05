@@ -1,7 +1,7 @@
 package com.example.antonapi.service.tools;
 
 
-import com.example.antonapi.service.dto.ImageDTO;
+import com.example.antonapi.dto.ImageDTO;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
 

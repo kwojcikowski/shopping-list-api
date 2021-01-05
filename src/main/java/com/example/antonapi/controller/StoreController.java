@@ -3,7 +3,7 @@ package com.example.antonapi.controller;
 import com.example.antonapi.model.Store;
 import com.example.antonapi.repository.StoreRepository;
 import com.example.antonapi.service.assembler.StoreModelAssembler;
-import com.example.antonapi.service.dto.StoreDTO;
+import com.example.antonapi.dto.StoreDTO;
 import com.example.antonapi.service.tools.normalizer.Alphabet;
 import com.example.antonapi.service.tools.normalizer.NormalizationException;
 import com.example.antonapi.service.tools.normalizer.StringNormalizer;

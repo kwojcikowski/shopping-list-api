@@ -3,18 +3,12 @@ package com.example.antonapi.service.impl;
 import com.example.antonapi.model.Product;
 import com.example.antonapi.repository.ProductRepository;
 import com.example.antonapi.service.ProductService;
-import com.example.antonapi.service.dto.ImageDTO;
-import com.example.antonapi.service.dto.ProductDTO;
 import com.example.antonapi.service.exception.ProductException;
 import com.example.antonapi.service.tools.ImagesTools;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystems;

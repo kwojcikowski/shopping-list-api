@@ -3,7 +3,7 @@ package com.example.antonapi.service.modelmapper;
 import com.example.antonapi.config.ModelMapperConfiguration;
 import com.example.antonapi.model.*;
 import com.example.antonapi.repository.UnitRepository;
-import com.example.antonapi.service.dto.*;
+import com.example.antonapi.dto.*;
 import org.junit.jupiter.api.Test;
 import org.modelmapper.ModelMapper;
 

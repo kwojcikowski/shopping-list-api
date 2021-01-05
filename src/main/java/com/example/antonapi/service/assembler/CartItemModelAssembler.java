@@ -2,12 +2,10 @@ package com.example.antonapi.service.assembler;
 
 import com.example.antonapi.controller.CartItemController;
 import com.example.antonapi.model.CartItem;
-import com.example.antonapi.service.dto.CartItemDTO;
+import com.example.antonapi.dto.CartItemDTO;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.dom4j.rule.Mode;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.server.RepresentationModelAssembler;

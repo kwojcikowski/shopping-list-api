@@ -1,4 +1,4 @@
-package com.example.antonapi.service.dto;
+package com.example.antonapi.dto;
 
 import lombok.*;
 import org.springframework.hateoas.RepresentationModel;

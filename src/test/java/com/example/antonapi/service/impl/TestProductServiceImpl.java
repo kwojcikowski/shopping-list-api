@@ -6,12 +6,8 @@ import com.example.antonapi.model.Section;
 import com.example.antonapi.model.Unit;
 import com.example.antonapi.repository.ProductRepository;
 import com.example.antonapi.service.ProductService;
-import com.example.antonapi.service.dto.ProductDTO;
 import com.example.antonapi.service.exception.ProductException;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 import java.io.File;
 import java.io.IOException;

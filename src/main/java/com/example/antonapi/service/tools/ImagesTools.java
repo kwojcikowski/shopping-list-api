@@ -1,6 +1,6 @@
 package com.example.antonapi.service.tools;
 
-import com.example.antonapi.service.dto.ImageDTO;
+import com.example.antonapi.dto.ImageDTO;
 
 import javax.imageio.ImageIO;
 import java.awt.*;

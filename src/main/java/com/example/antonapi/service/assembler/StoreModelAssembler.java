@@ -2,7 +2,7 @@ package com.example.antonapi.service.assembler;
 
 import com.example.antonapi.controller.StoreController;
 import com.example.antonapi.model.Store;
-import com.example.antonapi.service.dto.StoreDTO;
+import com.example.antonapi.dto.StoreDTO;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;

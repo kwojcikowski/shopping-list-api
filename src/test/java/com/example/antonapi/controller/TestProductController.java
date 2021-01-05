@@ -4,7 +4,7 @@ import com.example.antonapi.TestModelMapperConfiguration;
 import com.example.antonapi.model.*;
 import com.example.antonapi.service.ProductService;
 import com.example.antonapi.service.assembler.ProductModelAssembler;
-import com.example.antonapi.service.dto.ImageDTO;
+import com.example.antonapi.dto.ImageDTO;
 import com.example.antonapi.service.exception.ProductException;
 import com.example.antonapi.service.tools.ImagesTools;
 import org.junit.Test;

@@ -3,7 +3,7 @@ package com.example.antonapi.controller;
 import com.example.antonapi.model.CartItem;
 import com.example.antonapi.service.CartItemService;
 import com.example.antonapi.service.assembler.CartItemModelAssembler;
-import com.example.antonapi.service.dto.CartItemDTO;
+import com.example.antonapi.dto.CartItemDTO;
 import com.example.antonapi.service.exception.CartItemException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
