@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.example</groupId>
-	<artifactId>anton-api</artifactId>
+	<artifactId>shopping-list-api</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>anton-api</name>
+	<name>shopping-list-api</name>
 	<description>API REST project to expose server endpoints</description>
 
 	<properties>
