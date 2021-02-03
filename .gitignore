@@ -3,10 +3,11 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
-/src/main/resources
+/src/main/resources/img
 .stfolder/
 .stversions
-.properties
+
+application.properties
 
 
 ### STS ###
