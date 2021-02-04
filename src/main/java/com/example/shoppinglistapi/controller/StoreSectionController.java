@@ -3,7 +3,7 @@ package com.example.shoppinglistapi.controller;
 import com.example.shoppinglistapi.model.StoreSection;
 import com.example.shoppinglistapi.repository.StoreSectionRepository;
 import com.example.shoppinglistapi.service.assembler.StoreSectionModelAssembler;
-import com.example.shoppinglistapi.dto.StoreSectionDTO;
+import com.example.shoppinglistapi.dto.storesection.StoreSectionReadDto;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -27,12 +27,12 @@ public class StoreSectionController {
     private final @NonNull ModelMapper modelMapper;
 
     @GetMapping
-    public ResponseEntity<CollectionModel<StoreSectionDTO>> getAllStoreSections() {
+    public ResponseEntity<CollectionModel<StoreSectionReadDto>> getAllStoreSections() {
         return ResponseEntity.ok(storeSectionModelAssembler.toCollectionModel(storeSectionRepository.findAll()));
     }
 
     @GetMapping(path = "/{id}")
-    public ResponseEntity<StoreSectionDTO> getStoreSectionById(@PathVariable("id") Long id){
+    public ResponseEntity<StoreSectionReadDto> getStoreSectionById(@PathVariable("id") Long id){
         StoreSection foundStoreSection = storeSectionRepository.findById(id).orElse(null);
         return foundStoreSection == null
                 ? ResponseEntity.notFound().build()
@@ -40,16 +40,16 @@ public class StoreSectionController {
     }
 
     @PostMapping
-    public ResponseEntity<StoreSectionDTO> addStoreSection(@RequestBody StoreSectionDTO requestStoreSection) {
+    public ResponseEntity<StoreSectionReadDto> addStoreSection(@RequestBody StoreSectionReadDto requestStoreSection) {
         StoreSection mappedStoreSection = modelMapper.map(requestStoreSection, StoreSection.class);
         StoreSection addedStoreSection = storeSectionRepository.saveAndFlush(mappedStoreSection);
-        StoreSectionDTO returnStoreSection = storeSectionModelAssembler.toModel(addedStoreSection);
+        StoreSectionReadDto returnStoreSection = storeSectionModelAssembler.toModel(addedStoreSection);
         return ResponseEntity.created(URI.create(returnStoreSection.getLink("self").get().getHref()))
                 .body(returnStoreSection);
     }
 
     @PatchMapping
-    public ResponseEntity<?> updateStoreSections(@RequestBody List<StoreSectionDTO> requestStoreSections) {
+    public ResponseEntity<?> updateStoreSections(@RequestBody List<StoreSectionReadDto> requestStoreSections) {
         storeSectionRepository.saveAll(
                 requestStoreSections.stream()
                         .map(storeSectionDTO -> modelMapper.map(storeSectionDTO, StoreSection.class))

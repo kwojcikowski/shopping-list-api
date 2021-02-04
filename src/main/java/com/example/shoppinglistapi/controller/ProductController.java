@@ -3,8 +3,8 @@ package com.example.shoppinglistapi.controller;
 import com.example.shoppinglistapi.model.Product;
 import com.example.shoppinglistapi.service.ProductService;
 import com.example.shoppinglistapi.service.assembler.ProductModelAssembler;
-import com.example.shoppinglistapi.dto.ImageDTO;
-import com.example.shoppinglistapi.dto.ProductDTO;
+import com.example.shoppinglistapi.dto.product.ImageReadDto;
+import com.example.shoppinglistapi.dto.product.ProductReadDTO;
 import com.example.shoppinglistapi.service.exception.ProductException;
 import com.example.shoppinglistapi.service.tools.ImagesTools;
 import lombok.NonNull;
@@ -30,12 +30,12 @@ public class ProductController {
 
 
     @GetMapping
-    public ResponseEntity<CollectionModel<ProductDTO>> getAllProducts() {
+    public ResponseEntity<CollectionModel<ProductReadDTO>> getAllProducts() {
         return ResponseEntity.ok(productModelAssembler.toCollectionModel(productService.getAllProducts()));
     }
 
     @GetMapping(path = "/{id}")
-    public ResponseEntity<ProductDTO> getProductById(@PathVariable("id") Long id){
+    public ResponseEntity<ProductReadDTO> getProductById(@PathVariable("id") Long id){
         try {
             return ResponseEntity.ok(productModelAssembler.toModel(productService.findProduct(id)));
         } catch (ProductException e) {
@@ -44,17 +44,17 @@ public class ProductController {
     }
 
     @PostMapping
-    public ResponseEntity<ProductDTO> addProduct(@RequestBody ProductDTO requestProduct) throws IOException, ProductException {
+    public ResponseEntity<ProductReadDTO> addProduct(@RequestBody ProductReadDTO requestProduct) throws IOException, ProductException {
         String imageUrl = requestProduct.getImageUrl();
         Product product = modelMapper.map(requestProduct, Product.class);
         Product registeredProduct = productService.registerNewProduct(product, imageUrl);
-        ProductDTO returnedProduct = productModelAssembler.toModel(registeredProduct);
+        ProductReadDTO returnedProduct = productModelAssembler.toModel(registeredProduct);
         return ResponseEntity.created(URI.create(returnedProduct.getLink("self").get().getHref()))
                 .body(returnedProduct);
     }
 
     @DeleteMapping(path = "/{id}")
-    public ResponseEntity<ProductDTO> removeProduct(@PathVariable("id") Long id) {
+    public ResponseEntity<ProductReadDTO> removeProduct(@PathVariable("id") Long id) {
         try {
             productService.deleteProductById(id);
             return ResponseEntity.noContent().build();
@@ -64,22 +64,22 @@ public class ProductController {
     }
 
     @GetMapping(path = "/{productId}/image")
-    public ResponseEntity<ImageDTO> getProductImage(@PathVariable("productId") Long productId) throws IOException {
+    public ResponseEntity<ImageReadDto> getProductImage(@PathVariable("productId") Long productId) throws IOException {
         try {
             Product product = productService.findProduct(productId);
-            ImageDTO imageDTO = ImagesTools.getImageFromLocalResources(product.getImage().getAbsolutePath());
-            return ResponseEntity.ok(imageDTO);
+            ImageReadDto imageReadDto = ImagesTools.getImageFromLocalResources(product.getImage().getAbsolutePath());
+            return ResponseEntity.ok(imageReadDto);
         } catch (ProductException e) {
             return ResponseEntity.notFound().build();
         }
     }
 
     @GetMapping(path = "/{productId}/thumbImage")
-    public ResponseEntity<ImageDTO> getProductThumbImage(@PathVariable("productId")  Long productId) throws IOException {
+    public ResponseEntity<ImageReadDto> getProductThumbImage(@PathVariable("productId")  Long productId) throws IOException {
         try {
             Product product = productService.findProduct(productId);
-            ImageDTO imageDTO = ImagesTools.getImageFromLocalResources(product.getThumbImage().getAbsolutePath());
-            return ResponseEntity.ok(imageDTO);
+            ImageReadDto imageReadDto = ImagesTools.getImageFromLocalResources(product.getThumbImage().getAbsolutePath());
+            return ResponseEntity.ok(imageReadDto);
         } catch (ProductException e) {
             return ResponseEntity.notFound().build();
         }

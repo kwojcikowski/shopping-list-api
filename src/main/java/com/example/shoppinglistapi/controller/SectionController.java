@@ -3,7 +3,7 @@ package com.example.shoppinglistapi.controller;
 import com.example.shoppinglistapi.model.Section;
 import com.example.shoppinglistapi.repository.SectionRepository;
 import com.example.shoppinglistapi.service.assembler.SectionModelAssembler;
-import com.example.shoppinglistapi.dto.SectionDTO;
+import com.example.shoppinglistapi.dto.section.SectionReadDto;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -25,12 +25,12 @@ public class SectionController {
     private final @NonNull ModelMapper modelMapper;
 
     @GetMapping
-    public ResponseEntity<CollectionModel<SectionDTO>> getAllSections() {
+    public ResponseEntity<CollectionModel<SectionReadDto>> getAllSections() {
         return ResponseEntity.ok(sectionModelAssembler.toCollectionModel(sectionRepository.findAll()));
     }
 
     @GetMapping(path = "/{id}")
-    public ResponseEntity<SectionDTO> getSectionById(@PathVariable("id") Long id){
+    public ResponseEntity<SectionReadDto> getSectionById(@PathVariable("id") Long id){
         Section foundSection = sectionRepository.findById(id).orElse(null);
         return foundSection == null
                 ? ResponseEntity.notFound().build()
@@ -38,12 +38,12 @@ public class SectionController {
     }
 
     @PostMapping
-    public ResponseEntity<SectionDTO> addSection(@RequestBody SectionDTO requestSection) {
+    public ResponseEntity<SectionReadDto> addSection(@RequestBody SectionReadDto requestSection) {
         Section mappedSection = modelMapper.map(requestSection, Section.class);
         Section addedSection = sectionRepository.saveAndFlush(mappedSection);
-        SectionDTO returnSectionDTO = sectionModelAssembler.toModel(addedSection);
-        return ResponseEntity.created(URI.create(returnSectionDTO.getLink("self").get().getHref()))
-                .body(returnSectionDTO);
+        SectionReadDto returnSectionReadDto = sectionModelAssembler.toModel(addedSection);
+        return ResponseEntity.created(URI.create(returnSectionReadDto.getLink("self").get().getHref()))
+                .body(returnSectionReadDto);
     }
 
     @DeleteMapping(path = "/{id}")

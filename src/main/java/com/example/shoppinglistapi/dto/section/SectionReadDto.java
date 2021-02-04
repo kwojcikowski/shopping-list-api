@@ -1,6 +1,5 @@
-package com.example.shoppinglistapi.dto;
+package com.example.shoppinglistapi.dto.section;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 import org.springframework.hateoas.RepresentationModel;
 import org.springframework.hateoas.server.core.Relation;
@@ -11,12 +10,12 @@ import org.springframework.hateoas.server.core.Relation;
 @AllArgsConstructor
 @Builder
 @Relation(collectionRelation = "sections", itemRelation = "section")
-public class SectionDTO extends RepresentationModel<SectionDTO> {
+public class SectionReadDto extends RepresentationModel<SectionReadDto> {
 
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private Long id;
     @NonNull
-    private String name;
+    public Long id;
+    @NonNull
+    public String name;
 
     /*
     Links

@@ -2,7 +2,7 @@ package com.example.shoppinglistapi.service.assembler;
 
 import com.example.shoppinglistapi.controller.StoreController;
 import com.example.shoppinglistapi.model.Store;
-import com.example.shoppinglistapi.dto.StoreDTO;
+import com.example.shoppinglistapi.dto.store.StoreReadDto;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -19,24 +19,24 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Component
 @RequiredArgsConstructor
-public class StoreModelAssembler implements RepresentationModelAssembler<Store, StoreDTO> {
+public class StoreModelAssembler implements RepresentationModelAssembler<Store, StoreReadDto> {
 
     private final @NonNull ModelMapper modelMapper;
 
     @Override
-    public StoreDTO toModel(Store entity) {
-        StoreDTO storeDTO = modelMapper.map(entity, StoreDTO.class);
+    public StoreReadDto toModel(Store entity) {
+        StoreReadDto storeReadDto = modelMapper.map(entity, StoreReadDto.class);
         Link selfLink = linkTo(methodOn(StoreController.class).getStoreById(entity.getId())).withSelfRel();
-        storeDTO.add(selfLink);
-        return storeDTO;
+        storeReadDto.add(selfLink);
+        return storeReadDto;
     }
 
     @Override
-    public CollectionModel<StoreDTO> toCollectionModel(Iterable<? extends Store> entities) {
-        List<StoreDTO> storeDTOs = new ArrayList<>();
+    public CollectionModel<StoreReadDto> toCollectionModel(Iterable<? extends Store> entities) {
+        List<StoreReadDto> storeReadDtos = new ArrayList<>();
         for (Store entity : entities){
-            storeDTOs.add(toModel(entity));
+            storeReadDtos.add(toModel(entity));
         }
-        return CollectionModel.of(storeDTOs);
+        return CollectionModel.of(storeReadDtos);
     }
 }

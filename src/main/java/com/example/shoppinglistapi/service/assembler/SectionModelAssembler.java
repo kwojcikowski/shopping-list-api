@@ -2,7 +2,7 @@ package com.example.shoppinglistapi.service.assembler;
 
 import com.example.shoppinglistapi.controller.SectionController;
 import com.example.shoppinglistapi.model.Section;
-import com.example.shoppinglistapi.dto.SectionDTO;
+import com.example.shoppinglistapi.dto.section.SectionReadDto;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -19,24 +19,24 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Component
 @RequiredArgsConstructor
-public class SectionModelAssembler implements RepresentationModelAssembler<Section, SectionDTO> {
+public class SectionModelAssembler implements RepresentationModelAssembler<Section, SectionReadDto> {
 
     private final @NonNull ModelMapper modelMapper;
 
     @Override
-    public SectionDTO toModel(Section entity) {
-        SectionDTO sectionDTO = modelMapper.map(entity, SectionDTO.class);
+    public SectionReadDto toModel(Section entity) {
+        SectionReadDto sectionReadDto = modelMapper.map(entity, SectionReadDto.class);
         Link selfLink = linkTo(methodOn(SectionController.class).getSectionById(entity.getId())).withSelfRel();
-        sectionDTO.add(selfLink);
-        return sectionDTO;
+        sectionReadDto.add(selfLink);
+        return sectionReadDto;
     }
 
     @Override
-    public CollectionModel<SectionDTO> toCollectionModel(Iterable<? extends Section> entities) {
-        List<SectionDTO> sectionDTOS = new ArrayList<>();
+    public CollectionModel<SectionReadDto> toCollectionModel(Iterable<? extends Section> entities) {
+        List<SectionReadDto> sectionReadDtos = new ArrayList<>();
         for (Section entity : entities){
-            sectionDTOS.add(toModel(entity));
+            sectionReadDtos.add(toModel(entity));
         }
-        return CollectionModel.of(sectionDTOS);
+        return CollectionModel.of(sectionReadDtos);
     }
 }

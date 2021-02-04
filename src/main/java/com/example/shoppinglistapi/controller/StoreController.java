@@ -3,7 +3,7 @@ package com.example.shoppinglistapi.controller;
 import com.example.shoppinglistapi.model.Store;
 import com.example.shoppinglistapi.repository.StoreRepository;
 import com.example.shoppinglistapi.service.assembler.StoreModelAssembler;
-import com.example.shoppinglistapi.dto.StoreDTO;
+import com.example.shoppinglistapi.dto.store.StoreReadDto;
 import com.example.shoppinglistapi.service.tools.normalizer.Alphabet;
 import com.example.shoppinglistapi.service.tools.normalizer.NormalizationException;
 import com.example.shoppinglistapi.service.tools.normalizer.StringNormalizer;
@@ -28,12 +28,12 @@ public class StoreController {
     private final @NonNull ModelMapper modelMapper;
 
     @GetMapping
-    public ResponseEntity<CollectionModel<StoreDTO>> getAllStores() {
+    public ResponseEntity<CollectionModel<StoreReadDto>> getAllStores() {
         return ResponseEntity.ok(storeModelAssembler.toCollectionModel(storeRepository.findAll()));
     }
 
     @GetMapping(path = "/{id}")
-    public ResponseEntity<StoreDTO> getStoreById(@PathVariable("id") Long id){
+    public ResponseEntity<StoreReadDto> getStoreById(@PathVariable("id") Long id){
         Store foundStore = storeRepository.findById(id).orElse(null);
         return foundStore == null
                 ? ResponseEntity.notFound().build()
@@ -41,7 +41,7 @@ public class StoreController {
     }
 
     @PostMapping
-    public ResponseEntity<?> addStore(@RequestBody StoreDTO requestStore) {
+    public ResponseEntity<?> addStore(@RequestBody StoreReadDto requestStore) {
         Store mapperStore = modelMapper.map(requestStore, Store.class);
         Alphabet activeAlphabet = Alphabet.POLISH;
         try{
@@ -52,9 +52,9 @@ public class StoreController {
                     + "' does not match the alphabet " + activeAlphabet.name() + ".");
         }
         Store addedStore = storeRepository.saveAndFlush(mapperStore);
-        StoreDTO returnStoreDTO = storeModelAssembler.toModel(addedStore);
-        return ResponseEntity.created(URI.create(returnStoreDTO.getLink("self").get().getHref()))
-                .body(returnStoreDTO);
+        StoreReadDto returnStoreReadDto = storeModelAssembler.toModel(addedStore);
+        return ResponseEntity.created(URI.create(returnStoreReadDto.getLink("self").get().getHref()))
+                .body(returnStoreReadDto);
     }
 
     @DeleteMapping(path = "/{id}")

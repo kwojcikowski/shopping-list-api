@@ -1,9 +1,14 @@
 package com.example.shoppinglistapi.service.modelmapper;
 
 import com.example.shoppinglistapi.config.ModelMapperConfiguration;
+import com.example.shoppinglistapi.dto.cartitem.CartItemReadDto;
+import com.example.shoppinglistapi.dto.product.ProductReadDTO;
+import com.example.shoppinglistapi.dto.section.SectionReadDto;
+import com.example.shoppinglistapi.dto.store.StoreReadDto;
+import com.example.shoppinglistapi.dto.storesection.StoreSectionReadDto;
+import com.example.shoppinglistapi.dto.unit.UnitReadDto;
 import com.example.shoppinglistapi.model.*;
 import com.example.shoppinglistapi.repository.UnitRepository;
-import com.example.shoppinglistapi.dto.*;
 import org.junit.jupiter.api.Test;
 import org.modelmapper.ModelMapper;
 
@@ -29,7 +34,7 @@ public class TestModelToDTOMapping {
                 .name("Dairy")
                 .build();
 
-        SectionDTO expected = modelMapper.map(actual, SectionDTO.class);
+        SectionReadDto expected = modelMapper.map(actual, SectionReadDto.class);
 
         assertAll(() -> assertThat(expected.getId()).isEqualTo(1L),
                 () -> assertThat(expected.getName()).isEqualTo("Dairy"));
@@ -42,7 +47,7 @@ public class TestModelToDTOMapping {
                 .name("Close store")
                 .urlFriendlyName("close-store")
                 .build();
-        StoreDTO expected = modelMapper.map(actual, StoreDTO.class);
+        StoreReadDto expected = modelMapper.map(actual, StoreReadDto.class);
 
         assertAll(() -> assertThat(expected.getId()).isEqualTo(1L),
                 () -> assertThat(expected.getName()).isEqualTo("Close store"),
@@ -67,7 +72,7 @@ public class TestModelToDTOMapping {
                 .position(7)
                 .build();
 
-        StoreSectionDTO expected = modelMapper.map(actual, StoreSectionDTO.class);
+        StoreSectionReadDto expected = modelMapper.map(actual, StoreSectionReadDto.class);
 
         assertAll(() -> assertThat(expected.getId()).isEqualTo(1L),
                 () -> assertThat(expected.getPosition()).isEqualTo(7),
@@ -94,7 +99,7 @@ public class TestModelToDTOMapping {
                 .prefix(none)
                 .build();
 
-        UnitDTO expected = modelMapper.map(actual, UnitDTO.class);
+        UnitReadDto expected = modelMapper.map(actual, UnitReadDto.class);
 
         assertAll(() -> assertThat(expected.getId()).isEqualTo(1L),
                 () -> assertThat(expected.getAbbreviation()).isEqualTo("l"));
@@ -129,7 +134,7 @@ public class TestModelToDTOMapping {
                 .section(dairy)
                 .build();
 
-        ProductDTO expected = modelMapper.map(actual, ProductDTO.class);
+        ProductReadDTO expected = modelMapper.map(actual, ProductReadDTO.class);
 
         assertAll(() -> assertThat(expected.getId()).isEqualTo(1L),
                 () -> assertThat(expected.getName()).isEqualTo("Milk"),
@@ -174,7 +179,7 @@ public class TestModelToDTOMapping {
                 .quantity(new BigDecimal("2.5"))
                 .build();
 
-        CartItemDTO expected = modelMapper.map(actual, CartItemDTO.class);
+        CartItemReadDto expected = modelMapper.map(actual, CartItemReadDto.class);
 
         // Testing only cart item DTO fields, as relations as ProductDTO are tested within ProductDTOModelAssembler
         assertAll(() -> assertThat(expected.getId()).isEqualTo(1L),

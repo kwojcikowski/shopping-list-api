@@ -1,6 +1,5 @@
-package com.example.shoppinglistapi.dto;
+package com.example.shoppinglistapi.dto.store;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 import org.springframework.hateoas.RepresentationModel;
 import org.springframework.hateoas.server.core.Relation;
@@ -11,14 +10,14 @@ import org.springframework.hateoas.server.core.Relation;
 @AllArgsConstructor
 @Builder
 @Relation(collectionRelation = "stores", itemRelation = "store")
-public class StoreDTO extends RepresentationModel<StoreDTO> {
+public class StoreReadDto extends RepresentationModel<StoreReadDto> {
 
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private Long id;
     @NonNull
-    private String name;
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private String urlFriendlyName;
+    public Long id;
+    @NonNull
+    public String name;
+    @NonNull
+    public String urlFriendlyName;
 
     /*
     Links

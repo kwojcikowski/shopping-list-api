@@ -3,7 +3,7 @@ package com.example.shoppinglistapi.controller;
 import com.example.shoppinglistapi.model.CartItem;
 import com.example.shoppinglistapi.service.CartItemService;
 import com.example.shoppinglistapi.service.assembler.CartItemModelAssembler;
-import com.example.shoppinglistapi.dto.CartItemDTO;
+import com.example.shoppinglistapi.dto.cartitem.CartItemReadDto;
 import com.example.shoppinglistapi.service.exception.CartItemException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -28,12 +28,12 @@ public class CartItemController {
     private final @NonNull ModelMapper modelMapper;
 
     @GetMapping
-    public ResponseEntity<CollectionModel<CartItemDTO>> getAllCartItems(){
+    public ResponseEntity<CollectionModel<CartItemReadDto>> getAllCartItems(){
         return ResponseEntity.ok(cartItemModelAssembler.toCollectionModel(cartItemService.getAllCartItems()));
     }
 
     @GetMapping(path = "/{id}")
-    public ResponseEntity<CartItemDTO> getCartItemById(@PathVariable("id") Long id){
+    public ResponseEntity<CartItemReadDto> getCartItemById(@PathVariable("id") Long id){
         try {
             return ResponseEntity.ok(cartItemModelAssembler.toModel(cartItemService.findCartItem(id)));
         } catch (CartItemException e) {
@@ -42,16 +42,16 @@ public class CartItemController {
     }
 
     @PostMapping
-    public ResponseEntity<CartItemDTO> addCartItem(@RequestBody CartItemDTO cartItemFromRequest){
+    public ResponseEntity<CartItemReadDto> addCartItem(@RequestBody CartItemReadDto cartItemFromRequest){
         CartItem mappedCartItem = modelMapper.map(cartItemFromRequest, CartItem.class);
         CartItem addedCartItem = cartItemService.addCartItem(mappedCartItem);
-        CartItemDTO returnCartItem = cartItemModelAssembler.toModel(addedCartItem);
+        CartItemReadDto returnCartItem = cartItemModelAssembler.toModel(addedCartItem);
         return ResponseEntity.created(URI.create(returnCartItem.getLink("self").get().getHref()))
                 .body(returnCartItem);
     }
 
     @PatchMapping
-    public ResponseEntity<CartItemDTO> updateCartItems(@RequestBody List<CartItemDTO> cartItemsFromRequest) {
+    public ResponseEntity<CartItemReadDto> updateCartItems(@RequestBody List<CartItemReadDto> cartItemsFromRequest) {
         try {
             cartItemService.updateCartItems(cartItemsFromRequest
                     .stream()

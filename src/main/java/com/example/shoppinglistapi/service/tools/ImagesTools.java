@@ -1,6 +1,6 @@
 package com.example.shoppinglistapi.service.tools;
 
-import com.example.shoppinglistapi.dto.ImageDTO;
+import com.example.shoppinglistapi.dto.product.ImageReadDto;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -58,7 +58,7 @@ public class ImagesTools {
     }
 
 
-    public static ImageDTO getImageFromLocalResources(String fileName) throws IOException {
+    public static ImageReadDto getImageFromLocalResources(String fileName) throws IOException {
         Path imagePath = FileSystems.getDefault().getPath("src","main", "resources", "img", fileName);
         File f = new File(imagePath.toString());
         String fileType;
@@ -73,6 +73,6 @@ public class ImagesTools {
         }
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ImageIO.write(image, fileType, bos);
-        return ImageDTO.builder().width(image.getWidth()).height(image.getHeight()).image(bos.toByteArray()).build();
+        return ImageReadDto.builder().width(image.getWidth()).height(image.getHeight()).image(bos.toByteArray()).build();
     }
 }

@@ -4,7 +4,7 @@ import com.example.shoppinglistapi.TestModelMapperConfiguration;
 import com.example.shoppinglistapi.model.*;
 import com.example.shoppinglistapi.service.ProductService;
 import com.example.shoppinglistapi.service.assembler.ProductModelAssembler;
-import com.example.shoppinglistapi.dto.ImageDTO;
+import com.example.shoppinglistapi.dto.product.ImageReadDto;
 import com.example.shoppinglistapi.service.exception.ProductException;
 import com.example.shoppinglistapi.service.tools.ImagesTools;
 import org.junit.Test;
@@ -256,7 +256,7 @@ public class TestProductController {
                     .thenAnswer(s -> {
                         byte[] imageContent = new byte[500];
                         new Random().nextBytes(imageContent);
-                        return ImageDTO.builder()
+                        return ImageReadDto.builder()
                                 .width(800)
                                 .height(800)
                                 .image(imageContent)
@@ -306,7 +306,7 @@ public class TestProductController {
                     .thenAnswer(s -> {
                         byte[] imageContent = new byte[100];
                         new Random().nextBytes(imageContent);
-                        return ImageDTO.builder()
+                        return ImageReadDto.builder()
                                 .width(50)
                                 .height(50)
                                 .image(imageContent)

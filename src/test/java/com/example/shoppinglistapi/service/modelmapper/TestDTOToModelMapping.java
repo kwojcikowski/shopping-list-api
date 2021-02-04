@@ -1,9 +1,14 @@
 package com.example.shoppinglistapi.service.modelmapper;
 
 import com.example.shoppinglistapi.config.ModelMapperConfiguration;
+import com.example.shoppinglistapi.dto.cartitem.CartItemReadDto;
+import com.example.shoppinglistapi.dto.product.ProductReadDTO;
+import com.example.shoppinglistapi.dto.section.SectionReadDto;
+import com.example.shoppinglistapi.dto.store.StoreReadDto;
+import com.example.shoppinglistapi.dto.storesection.StoreSectionReadDto;
+import com.example.shoppinglistapi.dto.unit.UnitReadDto;
 import com.example.shoppinglistapi.model.*;
 import com.example.shoppinglistapi.repository.UnitRepository;
-import com.example.shoppinglistapi.dto.*;
 import org.junit.jupiter.api.Test;
 import org.modelmapper.ModelMapper;
 
@@ -43,7 +48,7 @@ public class TestDTOToModelMapping {
 
     @Test
     public void testSectionDTOMappingSuccessful(){
-        SectionDTO dairyDTO = SectionDTO.builder()
+        SectionReadDto dairyDTO = SectionReadDto.builder()
                 .id(1L)
                 .name("Dairy")
                 .build();
@@ -54,7 +59,7 @@ public class TestDTOToModelMapping {
 
     @Test
     public void testSectionDTOMappingSuccessfulWithNullId(){
-        SectionDTO dairyDTO = SectionDTO.builder()
+        SectionReadDto dairyDTO = SectionReadDto.builder()
                 .id(null)
                 .name("Dairy")
                 .build();
@@ -65,12 +70,12 @@ public class TestDTOToModelMapping {
 
     @Test
     public void testStoreDTOMappingSuccessful(){
-        StoreDTO nearbyStoreDTO = StoreDTO.builder()
+        StoreReadDto nearbyStoreReadDto = StoreReadDto.builder()
                 .id(1L)
                 .name("Nearby store")
                 .urlFriendlyName("nearby-store")
                 .build();
-        Store expected = mapper.map(nearbyStoreDTO, Store.class);
+        Store expected = mapper.map(nearbyStoreReadDto, Store.class);
         assertAll(() -> assertThat(expected.getId()).isEqualTo(1L),
                 () -> assertThat(expected.getName()).isEqualTo("Nearby store"),
                 () -> assertThat(expected.getUrlFriendlyName()).isEqualTo("nearby-store"));
@@ -78,18 +83,18 @@ public class TestDTOToModelMapping {
 
     @Test
     public void testStoreSectionDTOMappingSuccessful(){
-        StoreDTO nearbyStoreDTO = StoreDTO.builder()
+        StoreReadDto nearbyStoreReadDto = StoreReadDto.builder()
                 .id(1L)
                 .name("Nearby store")
                 .urlFriendlyName("nearby-store")
                 .build();
-        SectionDTO dairyDTO = SectionDTO.builder()
+        SectionReadDto dairyDTO = SectionReadDto.builder()
                 .id(null)
                 .name("Dairy")
                 .build();
-        StoreSectionDTO nearbyStoreDairyDTO = StoreSectionDTO.builder()
+        StoreSectionReadDto nearbyStoreDairyDTO = StoreSectionReadDto.builder()
                 .id(1L)
-                .store(nearbyStoreDTO)
+                .store(nearbyStoreReadDto)
                 .section(dairyDTO)
                 .position(7)
                 .build();
@@ -102,7 +107,7 @@ public class TestDTOToModelMapping {
 
     @Test
     public void testUnitDTOMappingSuccessful(){
-        UnitDTO literDTO = UnitDTO.builder()
+        UnitReadDto literDTO = UnitReadDto.builder()
                 .id(1L)
                 .abbreviation("l")
                 .build();
@@ -129,15 +134,15 @@ public class TestDTOToModelMapping {
 
     @Test
     public void testProductMappingSuccessful(){
-        UnitDTO literDTO = UnitDTO.builder()
+        UnitReadDto literDTO = UnitReadDto.builder()
                 .id(1L)
                 .abbreviation("l")
                 .build();
-        SectionDTO dairyDTO = SectionDTO.builder()
+        SectionReadDto dairyDTO = SectionReadDto.builder()
                 .id(1L)
                 .name("Dairy")
                 .build();
-        ProductDTO milkDTO = ProductDTO.builder()
+        ProductReadDTO milkDTO = ProductReadDTO.builder()
                 .id(1L)
                 .name("Milk")
                 .defaultUnit(literDTO)
@@ -153,21 +158,21 @@ public class TestDTOToModelMapping {
 
     @Test
     public void testCartItemMappingSuccessful(){
-        UnitDTO literDTO = UnitDTO.builder()
+        UnitReadDto literDTO = UnitReadDto.builder()
                 .id(1L)
                 .abbreviation("l")
                 .build();
-        SectionDTO dairyDTO = SectionDTO.builder()
+        SectionReadDto dairyDTO = SectionReadDto.builder()
                 .id(1L)
                 .name("Dairy")
                 .build();
-        ProductDTO milkDTO = ProductDTO.builder()
+        ProductReadDTO milkDTO = ProductReadDTO.builder()
                 .id(1L)
                 .name("Milk")
                 .defaultUnit(literDTO)
                 .section(dairyDTO)
                 .build();
-        CartItemDTO milkCartItem = CartItemDTO
+        CartItemReadDto milkCartItem = CartItemReadDto
                 .builder()
                 .id(1L)
                 .product(milkDTO)

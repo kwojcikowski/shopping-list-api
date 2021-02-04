@@ -2,7 +2,7 @@ package com.example.shoppinglistapi.service.assembler;
 
 import com.example.shoppinglistapi.controller.ProductController;
 import com.example.shoppinglistapi.model.Product;
-import com.example.shoppinglistapi.dto.ProductDTO;
+import com.example.shoppinglistapi.dto.product.ProductReadDTO;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -20,14 +20,14 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Component
 @RequiredArgsConstructor
-public class ProductModelAssembler implements RepresentationModelAssembler<Product, ProductDTO> {
+public class ProductModelAssembler implements RepresentationModelAssembler<Product, ProductReadDTO> {
 
     private final @NonNull ModelMapper modelMapper;
 
     @SneakyThrows
     @Override
-    public ProductDTO toModel(Product entity) {
-        ProductDTO productDTO = modelMapper.map(entity, ProductDTO.class);
+    public ProductReadDTO toModel(Product entity) {
+        ProductReadDTO productDTO = modelMapper.map(entity, ProductReadDTO.class);
 
         Link selfLink = linkTo(methodOn(ProductController.class).getProductById(entity.getId())).withSelfRel();
         Link imageLink = linkTo(methodOn(ProductController.class).getProductImage(entity.getId())).withRel("image");
@@ -39,8 +39,8 @@ public class ProductModelAssembler implements RepresentationModelAssembler<Produ
 
     @SneakyThrows
     @Override
-    public CollectionModel<ProductDTO> toCollectionModel(Iterable<? extends Product> entities) {
-        List<ProductDTO> productDTOS = new ArrayList<>();
+    public CollectionModel<ProductReadDTO> toCollectionModel(Iterable<? extends Product> entities) {
+        List<ProductReadDTO> productDTOS = new ArrayList<>();
         for (Product entity : entities){
             productDTOS.add(toModel(entity));
         }

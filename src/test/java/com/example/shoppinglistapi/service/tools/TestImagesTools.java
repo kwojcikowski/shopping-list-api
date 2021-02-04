@@ -1,7 +1,7 @@
 package com.example.shoppinglistapi.service.tools;
 
 
-import com.example.shoppinglistapi.dto.ImageDTO;
+import com.example.shoppinglistapi.dto.product.ImageReadDto;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
 
@@ -103,7 +103,7 @@ public class TestImagesTools {
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             ImageIO.write(initialImage, fileType, bos);
 
-            ImageDTO resultImage = ImagesTools.getImageFromLocalResources(ImagesTools.NO_IMAGE_FILENAME);
+            ImageReadDto resultImage = ImagesTools.getImageFromLocalResources(ImagesTools.NO_IMAGE_FILENAME);
             assertThat(resultImage.getImage()).isEqualTo(bos.toByteArray());
         } catch (IOException e) {
             fail("Exception should not had been thrown.");
@@ -120,7 +120,7 @@ public class TestImagesTools {
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             ImageIO.write(initialImage, fileType, bos);
 
-            ImageDTO resultImage = ImagesTools.getImageFromLocalResources("s0m3r4nd0m1m4g3.png");
+            ImageReadDto resultImage = ImagesTools.getImageFromLocalResources("s0m3r4nd0m1m4g3.png");
             assertThat(resultImage.getImage()).isEqualTo(bos.toByteArray());
         } catch (IOException e) {
             fail("Exception should not had been thrown.");

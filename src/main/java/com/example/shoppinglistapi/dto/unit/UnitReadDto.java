@@ -1,4 +1,4 @@
-package com.example.shoppinglistapi.dto;
+package com.example.shoppinglistapi.dto.unit;
 
 import lombok.*;
 import org.springframework.hateoas.RepresentationModel;
@@ -10,10 +10,12 @@ import org.springframework.hateoas.server.core.Relation;
 @AllArgsConstructor
 @Builder
 @Relation(collectionRelation = "units", itemRelation = "unit")
-public class UnitDTO extends RepresentationModel<UnitDTO> {
-    private Long id;
+public class UnitReadDto extends RepresentationModel<UnitReadDto> {
+
     @NonNull
-    private String abbreviation;
+    public Long id;
+    @NonNull
+    public String abbreviation;
 
     /*
     Links

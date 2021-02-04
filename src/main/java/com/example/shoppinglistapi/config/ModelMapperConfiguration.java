@@ -2,7 +2,7 @@ package com.example.shoppinglistapi.config;
 
 import com.example.shoppinglistapi.model.Unit;
 import com.example.shoppinglistapi.repository.UnitRepository;
-import com.example.shoppinglistapi.dto.UnitDTO;
+import com.example.shoppinglistapi.dto.unit.UnitReadDto;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.Converter;
@@ -18,22 +18,22 @@ public class ModelMapperConfiguration {
 
     @Bean
     public ModelMapper modelMapper(){
-        Converter<Unit, UnitDTO> unitToUnitDTOConverter = context -> {
+        Converter<Unit, UnitReadDto> unitToUnitDTOConverter = context -> {
             Unit src = context.getSource();
-            return UnitDTO.builder()
+            return UnitReadDto.builder()
                     .id(src.getId())
                     .abbreviation(src.toString())
                     .build();
         };
 
-        Converter<UnitDTO, Unit> unitDtoToUnitConverter = context -> {
-            UnitDTO src = context.getSource();
+        Converter<UnitReadDto, Unit> unitDtoToUnitConverter = context -> {
+            UnitReadDto src = context.getSource();
             return unitRepository.findById(src.getId()).orElseThrow();
         };
 
         ModelMapper mapper =  new ModelMapper();
-        mapper.addConverter(unitToUnitDTOConverter, Unit.class, UnitDTO.class);
-        mapper.addConverter(unitDtoToUnitConverter, UnitDTO.class, Unit.class);
+        mapper.addConverter(unitToUnitDTOConverter, Unit.class, UnitReadDto.class);
+        mapper.addConverter(unitDtoToUnitConverter, UnitReadDto.class, Unit.class);
         return mapper;
     }
 }

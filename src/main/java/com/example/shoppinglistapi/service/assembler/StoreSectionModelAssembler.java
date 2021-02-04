@@ -2,7 +2,7 @@ package com.example.shoppinglistapi.service.assembler;
 
 import com.example.shoppinglistapi.controller.StoreSectionController;
 import com.example.shoppinglistapi.model.StoreSection;
-import com.example.shoppinglistapi.dto.StoreSectionDTO;
+import com.example.shoppinglistapi.dto.storesection.StoreSectionReadDto;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -19,24 +19,24 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Component
 @RequiredArgsConstructor
-public class StoreSectionModelAssembler implements RepresentationModelAssembler<StoreSection, StoreSectionDTO> {
+public class StoreSectionModelAssembler implements RepresentationModelAssembler<StoreSection, StoreSectionReadDto> {
 
     private final @NonNull ModelMapper modelMapper;
 
     @Override
-    public StoreSectionDTO toModel(StoreSection entity) {
-        StoreSectionDTO storeSectionDTO = modelMapper.map(entity, StoreSectionDTO.class);
+    public StoreSectionReadDto toModel(StoreSection entity) {
+        StoreSectionReadDto storeSectionReadDto = modelMapper.map(entity, StoreSectionReadDto.class);
         Link selfLink = linkTo(methodOn(StoreSectionController.class).getStoreSectionById(entity.getId())).withSelfRel();
-        storeSectionDTO.add(selfLink);
-        return storeSectionDTO;
+        storeSectionReadDto.add(selfLink);
+        return storeSectionReadDto;
     }
 
     @Override
-    public CollectionModel<StoreSectionDTO> toCollectionModel(Iterable<? extends StoreSection> entities) {
-        List<StoreSectionDTO> storeSectionDTOS = new ArrayList<>();
+    public CollectionModel<StoreSectionReadDto> toCollectionModel(Iterable<? extends StoreSection> entities) {
+        List<StoreSectionReadDto> storeSectionReadDtos = new ArrayList<>();
         for (StoreSection entity : entities){
-            storeSectionDTOS.add(toModel(entity));
+            storeSectionReadDtos.add(toModel(entity));
         }
-        return CollectionModel.of(storeSectionDTOS);
+        return CollectionModel.of(storeSectionReadDtos);
     }
 }
