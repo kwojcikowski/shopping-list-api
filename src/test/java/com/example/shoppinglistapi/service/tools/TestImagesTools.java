@@ -4,6 +4,12 @@ package com.example.shoppinglistapi.service.tools;
 import com.example.shoppinglistapi.dto.product.ImageReadDto;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -17,12 +23,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
+@ExtendWith(SpringExtension.class)
+@Import({ImagesTools.class})
+@TestPropertySource(properties = {"app.resource-dir=src/test/resources/img"})
 public class TestImagesTools {
+
+    @Value("${app.resource-dir}")
+    private String testResourceDir;
 
     @Test
     public void testForExistenceOfTestImage(){
-        Path path = FileSystems.getDefault().getPath("src", "test", "resources", "img",
-                ImagesTools.NO_IMAGE_FILENAME);
+        Path path = FileSystems.getDefault().getPath(testResourceDir, ImagesTools.NO_IMAGE_FILENAME);
         File imageFile = new File(path.toAbsolutePath().toString());
         assertThat(imageFile.exists()).isTrue();
     }
@@ -36,26 +47,10 @@ public class TestImagesTools {
     }
 
     @Test
-    public void testIfTestedNoImageIsEqualToMainNoImage(){
-        Path mainPath = FileSystems.getDefault().getPath("src", "main", "resources", "img",
-                ImagesTools.NO_IMAGE_FILENAME);
-        File mainImageFile = new File(mainPath.toAbsolutePath().toString());
-
-        Path testPath = FileSystems.getDefault().getPath("src", "test", "resources", "img",
-                ImagesTools.NO_IMAGE_FILENAME);
-        File testImageFile = new File(testPath.toAbsolutePath().toString());
-        try {
-            assertThat(FileUtils.contentEquals(mainImageFile, testImageFile)).isTrue();
-        } catch (IOException e) {
-            fail("Exception should not had been thrown.");
-        }
-    }
-
-    @Test
     public void testSaveImageFromURLReturnImageCorrectImage(){
-        Path path = FileSystems.getDefault().getPath("src", "test", "resources", "img");
+        Path path = FileSystems.getDefault().getPath(testResourceDir);
         String srcPath = path.toAbsolutePath() + File.separator + ImagesTools.NO_IMAGE_FILENAME;
-        String destPath =  srcPath + "_test.png";
+        String destPath =  "test.png";
         File savedFile = null;
         try {
             savedFile = ImagesTools.saveImageFromURL("file:///" + srcPath, destPath);
@@ -75,7 +70,7 @@ public class TestImagesTools {
 
     @Test
     public void testGenerateImageThumbnailCheckIfDimensionsAreCorrect(){
-        Path path = FileSystems.getDefault().getPath("src", "test", "resources", "img");
+        Path path = FileSystems.getDefault().getPath(testResourceDir);
         String srcPath = path.toAbsolutePath() + File.separator + ImagesTools.NO_IMAGE_FILENAME;
         File initialFile = new File(srcPath);
         File thumbnailFile = null;
@@ -95,7 +90,7 @@ public class TestImagesTools {
 
     @Test
     public void testGetImageFromLocalResourcesReturnCorrectImage(){
-        Path path = FileSystems.getDefault().getPath("src", "test", "resources", "img");
+        Path path = FileSystems.getDefault().getPath(testResourceDir);
         String srcPath = path.toAbsolutePath() + File.separator + ImagesTools.NO_IMAGE_FILENAME;
         String fileType = ImagesTools.NO_IMAGE_FILENAME.split("\\.")[1];
         try {
@@ -112,7 +107,7 @@ public class TestImagesTools {
 
     @Test
     public void testGetImageFromLocalResourcesReturnNoImageForNonExistingName(){
-        Path path = FileSystems.getDefault().getPath("src", "test", "resources", "img");
+        Path path = FileSystems.getDefault().getPath(testResourceDir);
         String srcPath = path.toAbsolutePath() + File.separator + ImagesTools.NO_IMAGE_FILENAME;
         String fileType = ImagesTools.NO_IMAGE_FILENAME.split("\\.")[1];
         try {

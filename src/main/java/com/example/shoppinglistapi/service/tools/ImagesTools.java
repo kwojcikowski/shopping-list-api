@@ -1,7 +1,13 @@
 package com.example.shoppinglistapi.service.tools;
 
 import com.example.shoppinglistapi.dto.product.ImageReadDto;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -16,24 +22,35 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 
+@Component
 public class ImagesTools {
 
     public static final int THUMBNAIL_HEIGHT = 50;
     public static final int THUMBNAIL_WIDTH = 50;
     public static final String NO_IMAGE_FILENAME = "no_image.png";
 
+    private static String resourceDir;
+
+    @Value("${app.resource-dir}")
+    public void setPrivateResourceDir(String privateResourceDir) {
+        ImagesTools.resourceDir = privateResourceDir;
+    }
+
     public static File saveImageFromURL(String url, String destinationPath) throws IOException {
         try {
             URL imageUrl = new URL(url);
+            System.out.println(resourceDir);
+            String fullPath = Path.of(resourceDir, destinationPath).toAbsolutePath().toString();
+            System.out.println(fullPath);
             ReadableByteChannel readableByteChannel = Channels.newChannel(imageUrl.openStream());
-            FileOutputStream fileOutputStream = new FileOutputStream(destinationPath);
+            FileOutputStream fileOutputStream = new FileOutputStream(fullPath);
             FileChannel fileChannel = fileOutputStream.getChannel();
             fileOutputStream.getChannel()
                     .transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
             readableByteChannel.close();
             fileOutputStream.close();
             fileChannel.close();
-            return new File(destinationPath);
+            return new File(fullPath);
         }catch (IOException e){
             throw new IOException("Error saving image from URL", e.getCause());
         }
