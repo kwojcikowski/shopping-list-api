@@ -9,6 +9,5 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 @RepositoryRestResource
 @CrossOrigin
 public interface ProductRepository extends JpaRepository<Product, Long> {
-    Product findProductById(@Param("id") Long id);
-    Product findProductByName(@Param("name") String name);
+    boolean existsByName(@Param("name") String name);
 }
