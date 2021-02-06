@@ -1,119 +1,210 @@
 package com.example.shoppinglistapi.service.impl;
 
 
-import com.example.shoppinglistapi.model.Product;
-import com.example.shoppinglistapi.model.Section;
-import com.example.shoppinglistapi.model.Unit;
+import com.example.shoppinglistapi.dto.product.ProductCreateDto;
+import com.example.shoppinglistapi.model.*;
 import com.example.shoppinglistapi.repository.ProductRepository;
+import com.example.shoppinglistapi.repository.SectionRepository;
+import com.example.shoppinglistapi.repository.UnitRepository;
 import com.example.shoppinglistapi.service.ProductService;
-import com.example.shoppinglistapi.service.exception.ProductException;
+import com.example.shoppinglistapi.service.tools.ImagesTools;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
+import org.springframework.dao.DataIntegrityViolationException;
 
+import javax.persistence.EntityNotFoundException;
 import java.io.File;
-import java.io.IOException;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 public class TestProductServiceImpl {
 
-    @Test
-    public void testFindProduct(){
-        //Given
-        ProductRepository productRepository = mock(ProductRepository.class);
-        Product product = new Product(1L,"Banana", mock(Unit.class),
-                mock(Section.class), mock(File.class), mock(File.class));
-        when(productRepository.existsById(1L)).thenReturn(true);
-        when(productRepository.findProductById(1L)).thenReturn(product);
-        ProductService service = new ProductServiceImpl(productRepository);
+    private final ProductRepository productRepository = mock(ProductRepository.class);
+    private final SectionRepository sectionRepository = mock(SectionRepository.class);
+    private final UnitRepository unitRepository = mock(UnitRepository.class);
 
-        //When
-        Product returnedProduct = null;
-        try {
-            returnedProduct = service.findProduct(1L);
-            //Then
-            Product finalReturnedProduct = returnedProduct;
-            assertAll(() -> assertThat(finalReturnedProduct.getId()).isEqualTo(1L),
-                    () -> assertThat(finalReturnedProduct.getName()).isEqualTo("Banana"));
-        } catch (ProductException e) {
-            fail("Exception should not had been thrown.");
-        }
+    private final ProductService productService =
+            new ProductServiceImpl(productRepository, unitRepository, sectionRepository);
+
+
+    @Test
+    public void testFindProduct() {
+        Product product = Product.builder()
+                .id(1L)
+                .name("Banana")
+                .defaultUnit(mock(Unit.class))
+                .section(mock(Section.class))
+                .build();
+        when(productRepository.findById(1L)).thenReturn(Optional.ofNullable(product));
+
+        Product returnedProduct = assertDoesNotThrow(
+                () -> productService.findProduct(1L),
+                "No exception should be thrown on fetching an existing product."
+        );
+
+        assertAll(() -> assertThat(returnedProduct.getId()).isEqualTo(1L),
+                () -> assertThat(returnedProduct.getName()).isEqualTo("Banana"),
+                () -> assertThat(returnedProduct.getDefaultUnit()).isNotNull(),
+                () -> assertThat(returnedProduct.getSection()).isNotNull());
     }
 
     @Test
     public void testFindProductThrowExceptionOnNonExistingId() {
-        //Given
-        ProductRepository productRepository = mock(ProductRepository.class);
-        when(productRepository.findProductById(1L)).thenReturn(null);
-        ProductService service = new ProductServiceImpl(productRepository);
-
-        //When
-        try {
-            service.findProduct(1L);
-            //Then
-            fail("Exception should not had been thrown.");
-        } catch (ProductException e) {
-            assertThat(e.getMessage()).isEqualTo("Unable to fetch product: Product with id 1 does not exist.");
-        }
+        when(productRepository.findById(1L)).thenReturn(Optional.empty());
+        Exception exception = assertThrows(
+                EntityNotFoundException.class,
+                () -> productService.findProduct(1L),
+                "Expected to throw EntityNotFoundException on attempting to delete non existing product."
+        );
+        assertThat(exception.getMessage()).isEqualTo("Unable to fetch product: Product with given id does not exist.");
     }
 
     @Test
-    public void testDeleteProductByIdThrowExceptionOnNonExistingProductId(){
-        //Given
-        ProductRepository productRepository = mock(ProductRepository.class);
+    public void testDeleteProductById() {
+        when(productRepository.existsById(1L)).thenReturn(true);
+        doNothing().when(productRepository).deleteById(1L);
+        assertDoesNotThrow(
+                () -> productService.deleteProductById(1L),
+                "No exception should be thrown on deleting an existing product."
+        );
+    }
+
+    @Test
+    public void testDeleteProductByIdThrowExceptionOnNonExistingProductId() {
         when(productRepository.existsById(1L)).thenReturn(false);
-        ProductService service = new ProductServiceImpl(productRepository);
-
-        //When
-        try {
-            service.deleteProductById(1L);
-
-        //Then
-            fail("Exception should had been thrown.");
-        } catch (ProductException e) {
-            assertThat(e.getMessage()).isEqualTo("Unable to delete product: Product with ID " + 1L + " does not exist.");
-        }
+        Exception exception = assertThrows(
+                EntityNotFoundException.class,
+                () -> productService.deleteProductById(1L),
+                "Expected to throw EntityNotFoundException on attempting to delete non existing product."
+        );
+        assertThat(exception.getMessage()).isEqualTo("Unable to delete product: Product with given id does not exist.");
     }
 
     @Test
-    public void testRegisterNewProductThrowExceptionOnIdNonNull(){
-        //Given
-        ProductRepository productRepository = mock(ProductRepository.class);
-        ProductService service = new ProductServiceImpl(productRepository);
-        Product product = new Product();
-        product.setId(1L);
+    public void testRegisterNewProduct() {
+        BaseUnit pieces = BaseUnit.builder()
+                .id(1L)
+                .name("pieces")
+                .abbreviation("pcs")
+                .build();
+        Prefix prefix = Prefix.builder()
+                .id(1L)
+                .name("none")
+                .abbreviation("")
+                .scale(1.0)
+                .build();
+        Unit unit = Unit.builder()
+                .id(1L)
+                .baseUnit(pieces)
+                .prefix(prefix)
+                .build();
+        unit.setMasterUnit(unit);
+        Section section = Section.builder()
+                .id(1L)
+                .name("Fruits")
+                .build();
+        ProductCreateDto createDto = ProductCreateDto.builder()
+                .name("Banana")
+                .defaultUnitId(1L)
+                .sectionId(1L)
+                .imageUrl("https://link-to-image.jpg")
+                .build();
 
-        //When
-        try{
-            service.registerNewProduct(product, "");
+        Product expectedProduct = Product.builder()
+                .id(1L)
+                .name(createDto.name)
+                .defaultUnit(unit)
+                .section(section)
+                .image(mock(File.class))
+                .thumbImage(mock(File.class))
+                .build();
 
-        //Then
-            fail("Exception should had been thrown.");
-        }catch (ProductException | IOException e){
-            assertThat(e.getMessage()).isEqualTo("Unable to register product: Product must not have an ID.");
-        }
+        when(productRepository.existsByName("Banana")).thenReturn(false);
+        when(unitRepository.findById(1L)).thenReturn(Optional.of(unit));
+        when(sectionRepository.findById(1L)).thenReturn(Optional.ofNullable(section));
+        when(productRepository.saveAndFlush(any(Product.class))).thenReturn(expectedProduct);
+
+        MockedStatic<ImagesTools> imagesToolsMockedStatic = mockStatic(ImagesTools.class);
+        imagesToolsMockedStatic.when(() -> ImagesTools.saveImageFromURL(anyString(), anyString())).thenReturn(mock(File.class));
+        imagesToolsMockedStatic.when(() -> ImagesTools.generateImageThumbnail(any(File.class))).thenReturn(mock(File.class));
+
+        Product actualProduct = assertDoesNotThrow(
+                () -> productService.registerNewProduct(createDto),
+                "No exception should be thrown on registering a valid product."
+        );
+
+        assertAll(
+                () -> assertThat(actualProduct.getId()).isEqualTo(expectedProduct.getId()),
+                () -> assertThat(actualProduct.getName()).isEqualTo(expectedProduct.getName()),
+                () -> assertThat(actualProduct.getDefaultUnit()).isEqualTo(expectedProduct.getDefaultUnit()),
+                () -> assertThat(actualProduct.getSection()).isEqualTo(expectedProduct.getSection()),
+                () -> assertThat(actualProduct.getImage()).isNotNull(),
+                () -> assertThat(actualProduct.getThumbImage()).isNotNull()
+        );
     }
 
     @Test
-    public void testRegisterNewProductThrowExceptionOnProductNameDuplicate(){
-        //Given
-        ProductRepository productRepository = mock(ProductRepository.class);
-        Product product = new Product();
-        product.setName("Banana");
-        when(productRepository.findProductByName("Banana")).thenReturn(mock(Product.class));
-        ProductService service = new ProductServiceImpl(productRepository);
+    public void testRegisterNewProductThrowExceptionOnProductNameDuplicate() {
+        ProductCreateDto createDto = ProductCreateDto.builder()
+                .name("Banana")
+                .defaultUnitId(1L)
+                .sectionId(1L)
+                .imageUrl("")
+                .build();
 
-        //When
-        try{
-            service.registerNewProduct(product, "");
+        when(productRepository.existsByName("Banana")).thenReturn(true);
 
-            //Then
-            fail("Exception should had been thrown.");
-        }catch (ProductException | IOException e){
-            assertThat(e.getMessage()).isEqualTo("Unable to register product: Product with name " + "Banana"
-                    + " already exists.");
-        }
+        Exception exception = assertThrows(
+                DataIntegrityViolationException.class,
+                () -> productService.registerNewProduct(createDto),
+                "Expected to throw DataIntegrityViolationException when " +
+                        "registering product with already existing name"
+        );
+        assertThat(exception.getMessage()).isEqualTo("Unable to register product: " +
+                "Product with name Banana already exists.");
+    }
+
+    @Test
+    public void testRegisterNewProductThrowExceptionOnNonExistingUnit() {
+        ProductCreateDto createDto = ProductCreateDto.builder()
+                .name("Banana")
+                .defaultUnitId(1L)
+                .sectionId(1L)
+                .imageUrl("")
+                .build();
+
+        when(unitRepository.findById(1L)).thenReturn(Optional.empty());
+
+        Exception exception = assertThrows(
+                EntityNotFoundException.class,
+                () -> productService.registerNewProduct(createDto),
+                "Expected to throw EntityNotFoundException when " +
+                        "registering product with non existing unit"
+        );
+        assertThat(exception.getMessage()).isEqualTo("Unable to register product: Provided unit does not exist.");
+    }
+
+    @Test
+    public void testRegisterNewProductThrowExceptionOnNonExistingSection() {
+        ProductCreateDto createDto = ProductCreateDto.builder()
+                .name("Banana")
+                .defaultUnitId(1L)
+                .sectionId(1L)
+                .imageUrl("")
+                .build();
+
+        when(unitRepository.findById(1L)).thenReturn(Optional.of(mock(Unit.class)));
+        when(sectionRepository.findById(1L)).thenReturn(Optional.empty());
+
+        Exception exception = assertThrows(
+                EntityNotFoundException.class,
+                () -> productService.registerNewProduct(createDto),
+                "Expected to throw EntityNotFoundException when " +
+                        "registering product with non existing section"
+        );
+        assertThat(exception.getMessage()).isEqualTo("Unable to register product: Provided section does not exist.");
     }
 }
