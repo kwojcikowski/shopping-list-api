@@ -3,20 +3,24 @@ package com.example.shoppinglistapi.dto.product;
 import lombok.*;
 import org.springframework.hateoas.server.core.Relation;
 
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Relation(itemRelation = "product")
-public class ProductCreateDTO {
+public class ProductCreateDto {
 
-    @NonNull
+    @NotBlank
     public String name;
-    @NonNull
+    @Min(1)
     public Long defaultUnitId;
-    @NonNull
+    @Min(1)
     public Long sectionId;
-    @NonNull
+    @Pattern(regexp = "[a-zA-Z:/\\-1-9]+\\.(jpg|png)", message = "Image url has to end with .png or .jpg")
     public String imageUrl;
 
 }

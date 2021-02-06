@@ -12,7 +12,7 @@ import org.springframework.hateoas.server.core.Relation;
 @AllArgsConstructor
 @Builder
 @Relation(collectionRelation = "products", itemRelation = "product")
-public class ProductReadDTO extends RepresentationModel<ProductReadDTO> {
+public class ProductReadDto extends RepresentationModel<ProductReadDto> {
 
     @NonNull
     public Long id;

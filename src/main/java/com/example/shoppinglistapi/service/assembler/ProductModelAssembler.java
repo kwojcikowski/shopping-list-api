@@ -2,7 +2,7 @@ package com.example.shoppinglistapi.service.assembler;
 
 import com.example.shoppinglistapi.controller.ProductController;
 import com.example.shoppinglistapi.model.Product;
-import com.example.shoppinglistapi.dto.product.ProductReadDTO;
+import com.example.shoppinglistapi.dto.product.ProductReadDto;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -20,30 +20,30 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Component
 @RequiredArgsConstructor
-public class ProductModelAssembler implements RepresentationModelAssembler<Product, ProductReadDTO> {
+public class ProductModelAssembler implements RepresentationModelAssembler<Product, ProductReadDto> {
 
     private final @NonNull ModelMapper modelMapper;
 
     @SneakyThrows
     @Override
-    public ProductReadDTO toModel(Product entity) {
-        ProductReadDTO productDTO = modelMapper.map(entity, ProductReadDTO.class);
+    public ProductReadDto toModel(Product entity) {
+        ProductReadDto productDto = modelMapper.map(entity, ProductReadDto.class);
 
         Link selfLink = linkTo(methodOn(ProductController.class).getProductById(entity.getId())).withSelfRel();
         Link imageLink = linkTo(methodOn(ProductController.class).getProductImage(entity.getId())).withRel("image");
         Link thumbImageLink =
                 linkTo(methodOn(ProductController.class).getProductThumbImage(entity.getId())).withRel("thumbImage");
-        productDTO.add(List.of(selfLink, imageLink, thumbImageLink));
-        return productDTO;
+        productDto.add(List.of(selfLink, imageLink, thumbImageLink));
+        return productDto;
     }
 
     @SneakyThrows
     @Override
-    public CollectionModel<ProductReadDTO> toCollectionModel(Iterable<? extends Product> entities) {
-        List<ProductReadDTO> productDTOS = new ArrayList<>();
+    public CollectionModel<ProductReadDto> toCollectionModel(Iterable<? extends Product> entities) {
+        List<ProductReadDto> productDtos = new ArrayList<>();
         for (Product entity : entities){
-            productDTOS.add(toModel(entity));
+            productDtos.add(toModel(entity));
         }
-        return CollectionModel.of(productDTOS);
+        return CollectionModel.of(productDtos);
     }
 }
