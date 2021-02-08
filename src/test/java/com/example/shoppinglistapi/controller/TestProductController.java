@@ -1,11 +1,10 @@
 package com.example.shoppinglistapi.controller;
 
 import com.example.shoppinglistapi.TestModelMapperConfiguration;
+import com.example.shoppinglistapi.dto.product.ImageReadDto;
 import com.example.shoppinglistapi.model.*;
 import com.example.shoppinglistapi.service.ProductService;
 import com.example.shoppinglistapi.service.assembler.ProductModelAssembler;
-import com.example.shoppinglistapi.dto.product.ImageReadDto;
-import com.example.shoppinglistapi.service.exception.ProductException;
 import com.example.shoppinglistapi.service.tools.ImagesTools;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,6 +21,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
+import javax.persistence.EntityNotFoundException;
 import java.io.File;
 import java.util.List;
 import java.util.Random;
@@ -46,12 +46,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureRestDocs(outputDir = "target/generated-snippets/products")
 public class TestProductController {
 
-    @MockBean
-    private ProductService productService;
-
-    @Autowired
-    private MockMvc mockMvc;
-
     final Prefix none = Prefix.builder()
             .id(1L)
             .name("NONE")
@@ -72,6 +66,10 @@ public class TestProductController {
             .id(1L)
             .name("Section One")
             .build();
+    @MockBean
+    private ProductService productService;
+    @Autowired
+    private MockMvc mockMvc;
 
     @Test
     public void testGetAllProductsSuccessful() throws Exception {
@@ -151,7 +149,7 @@ public class TestProductController {
 
     @Test
     public void testGetProductByIdReturnNotFoundOnNonExistingId() throws Exception {
-        when(productService.findProduct(1L)).thenThrow(new ProductException());
+        when(productService.findProduct(1L)).thenThrow(new EntityNotFoundException());
         mockMvc.perform(get("/products/1"))
                 .andExpect(status().isNotFound());
     }
@@ -168,7 +166,7 @@ public class TestProductController {
                 "   \"name\": \"Section one\"}," +
                 "\"image\": \"https:\\\\link-to-image.png\"" +
                 "}";
-        when(productService.registerNewProduct(any(), any()))
+        when(productService.registerNewProduct(any()))
                 .thenAnswer(p -> Product.builder()
                         .id(1L)
                         .name("Product one")
@@ -180,8 +178,8 @@ public class TestProductController {
                         .thumbImage(mock(File.class))
                         .build());
         mockMvc.perform(post("/products")
-                    .contentType(MediaTypes.HAL_JSON)
-                    .content(postBody))
+                .contentType(MediaTypes.HAL_JSON)
+                .content(postBody))
                 .andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaTypes.HAL_JSON))
                 .andDo(document("add-product",
@@ -189,7 +187,7 @@ public class TestProductController {
                         preprocessResponse(prettyPrint()),
                         requestFields(
                                 fieldWithPath("name")
-                                    .description("Name of a product"),
+                                        .description("Name of a product"),
                                 subsectionWithPath("defaultUnit")
                                         .description("Default unit that is used for a product."),
                                 subsectionWithPath("section")
@@ -235,7 +233,7 @@ public class TestProductController {
 
     @Test
     public void testRemoveProductReturnNotFoundOnNonExistingId() throws Exception {
-        doThrow(ProductException.class).when(productService).deleteProductById(1L);
+        doThrow(EntityNotFoundException.class).when(productService).deleteProductById(1L);
         mockMvc.perform(delete("/products/1"))
                 .andExpect(status().isNotFound());
     }
@@ -251,7 +249,7 @@ public class TestProductController {
                 .thumbImage(new File("product1-thumbImage"))
                 .build();
         when(productService.findProduct(1L)).thenReturn(product1);
-        try(MockedStatic<ImagesTools> mockedImagesTools = Mockito.mockStatic(ImagesTools.class)){
+        try (MockedStatic<ImagesTools> mockedImagesTools = Mockito.mockStatic(ImagesTools.class)) {
             mockedImagesTools.when(() -> ImagesTools.getImageFromLocalResources(anyString()))
                     .thenAnswer(s -> {
                         byte[] imageContent = new byte[500];
@@ -285,7 +283,7 @@ public class TestProductController {
 
     @Test
     public void testGetProductImageReturnNotFoundOnNonExistingId() throws Exception {
-        when(productService.findProduct(1L)).thenThrow(new ProductException());
+        when(productService.findProduct(1L)).thenThrow(new EntityNotFoundException());
         mockMvc.perform(get("/products/1/image"))
                 .andExpect(status().isNotFound());
     }
@@ -301,7 +299,7 @@ public class TestProductController {
                 .thumbImage(new File("product1-thumbImage"))
                 .build();
         when(productService.findProduct(1L)).thenReturn(product1);
-        try(MockedStatic<ImagesTools> mockedImagesTools = Mockito.mockStatic(ImagesTools.class)){
+        try (MockedStatic<ImagesTools> mockedImagesTools = Mockito.mockStatic(ImagesTools.class)) {
             mockedImagesTools.when(() -> ImagesTools.getImageFromLocalResources(anyString()))
                     .thenAnswer(s -> {
                         byte[] imageContent = new byte[100];
@@ -335,7 +333,7 @@ public class TestProductController {
 
     @Test
     public void testGetProductThumbImageReturnNotFoundOnNonExistingId() throws Exception {
-        when(productService.findProduct(1L)).thenThrow(new ProductException());
+        when(productService.findProduct(1L)).thenThrow(new EntityNotFoundException());
         mockMvc.perform(get("/products/1/thumbImage"))
                 .andExpect(status().isNotFound());
     }
