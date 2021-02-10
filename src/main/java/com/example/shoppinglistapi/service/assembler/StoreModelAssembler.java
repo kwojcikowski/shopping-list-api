@@ -21,11 +21,13 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @RequiredArgsConstructor
 public class StoreModelAssembler implements RepresentationModelAssembler<Store, StoreReadDto> {
 
-    private final @NonNull ModelMapper modelMapper;
-
     @Override
     public StoreReadDto toModel(Store entity) {
-        StoreReadDto storeReadDto = modelMapper.map(entity, StoreReadDto.class);
+        StoreReadDto storeReadDto = StoreReadDto.builder()
+                .id(entity.getId())
+                .name(entity.getName())
+                .urlFriendlyName(entity.getUrlFriendlyName())
+                .build();
         Link selfLink = linkTo(methodOn(StoreController.class).getStoreById(entity.getId())).withSelfRel();
         storeReadDto.add(selfLink);
         return storeReadDto;
