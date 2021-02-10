@@ -1,8 +1,11 @@
 package com.example.shoppinglistapi.dto.store;
 
-import lombok.*;
-import org.springframework.hateoas.RepresentationModel;
-import org.springframework.hateoas.server.core.Relation;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import javax.validation.constraints.NotBlank;
 
 @Data
 @NoArgsConstructor
@@ -10,7 +13,7 @@ import org.springframework.hateoas.server.core.Relation;
 @Builder
 public class StoreCreateDto {
 
-    @NonNull
+    @NotBlank
     public String name;
 
     /*
