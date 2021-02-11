@@ -6,30 +6,31 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 
-interface BasicAlphabet{
-    List<Character> BASIC_LETTERS = "abcdefghijklmnopqrstuvwxyz "
-            .chars().mapToObj(c -> (char) c).collect(Collectors.toList());
-    boolean matchesString(String string);
-    Character normalizeCharacter(Character c);
-}
-
-public enum Alphabet implements BasicAlphabet{
-    POLISH(Map.of(
-            'ą', 'a',
-            'ć', 'c',
-            'ę', 'e',
-            'ł', 'l',
-            'ń', 'n',
-            'ó', 'o',
-            'ś', 's',
-            'ź', 'z',
-            'ż', 'z'
+public enum Alphabet implements BasicAlphabet {
+    POLISH(Map.ofEntries(
+            Map.entry('ą', 'a'),
+            Map.entry('ć', 'c'),
+            Map.entry('ę', 'e'),
+            Map.entry('ł', 'l'),
+            Map.entry('ń', 'n'),
+            Map.entry('ó', 'o'),
+            Map.entry('ś', 's'),
+            Map.entry('ź', 'z'),
+            Map.entry('ż', 'z'),
+            Map.entry('Ą', 'A'),
+            Map.entry('Ę', 'E'),
+            Map.entry('Ł', 'L'),
+            Map.entry('Ń', 'N'),
+            Map.entry('Ó', 'O'),
+            Map.entry('Ś', 'S'),
+            Map.entry('Ź', 'Z'),
+            Map.entry('Ż', 'Z')
     ));
 
     public Map<Character, Character> dialectReplacements;
     public List<Character> specialCharacters;
 
-    Alphabet(Map<Character, Character> dialectReplacements){
+    Alphabet(Map<Character, Character> dialectReplacements) {
         this.dialectReplacements = dialectReplacements;
         this.specialCharacters = new ArrayList<>(dialectReplacements.keySet());
     }
@@ -44,4 +45,13 @@ public enum Alphabet implements BasicAlphabet{
     public Character normalizeCharacter(Character c) {
         return dialectReplacements.getOrDefault(c, c);
     }
+}
+
+interface BasicAlphabet {
+    List<Character> BASIC_LETTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ "
+            .chars().mapToObj(c -> (char) c).collect(Collectors.toList());
+
+    boolean matchesString(String string);
+
+    Character normalizeCharacter(Character c);
 }
