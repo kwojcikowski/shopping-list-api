@@ -44,7 +44,7 @@ public class StoreServiceImpl implements StoreService {
         }
         Store storeToAdd = Store.builder()
                 .name(storeName)
-                .urlFriendlyName(storeName.replace(' ', '-'))
+                .urlFriendlyName(storeName.replace(' ', '-').toLowerCase())
                 .build();
         return storeRepository.save(storeToAdd);
     }
