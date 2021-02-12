@@ -7,9 +7,11 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.web.bind.annotation.CrossOrigin;
 
 import java.util.List;
+import java.util.Optional;
 
 @CrossOrigin
 @RepositoryRestResource
 public interface StoreSectionRepository extends JpaRepository<StoreSection, Long> {
-    List<StoreSection> findByStore_UrlFriendlyNameOrderByPosition(@Param("storeUrlFriendlyName") String urlFriendlyName);
+    List<StoreSection> findAllByStore_Id(@Param("storeId") Long storeId);
+    void removeAllByStore_Id(@Param("storeId") Long storeId);
 }

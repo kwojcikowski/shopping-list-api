@@ -2,11 +2,14 @@ package com.example.shoppinglistapi.controller;
 
 import com.example.shoppinglistapi.dto.store.StoreCreateDto;
 import com.example.shoppinglistapi.dto.store.StoreReadDto;
+import com.example.shoppinglistapi.dto.storesection.StoreSectionCreateDto;
 import com.example.shoppinglistapi.model.Store;
 import com.example.shoppinglistapi.service.StoreService;
 import com.example.shoppinglistapi.service.assembler.StoreModelAssembler;
+import com.example.shoppinglistapi.service.assembler.StoreSectionModelAssembler;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.persistence.EntityNotFoundException;
 import javax.validation.Valid;
 import java.net.URI;
+import java.util.List;
 
 @RepositoryRestController
 @CrossOrigin
@@ -24,6 +28,7 @@ public class StoreController {
 
     private final @NonNull StoreService storeService;
     private final @NonNull StoreModelAssembler storeModelAssembler;
+    private final @NonNull StoreSectionModelAssembler storeSectionModelAssembler;
 
     @GetMapping
     public ResponseEntity<CollectionModel<StoreReadDto>> getAllStores() {
@@ -58,6 +63,35 @@ public class StoreController {
             return ResponseEntity.noContent().build();
         } catch (EntityNotFoundException e) {
             return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping(path = "/{id}/storeSections")
+    public ResponseEntity<?> getStoreSections(@PathVariable("id") Long id) {
+        return ResponseEntity.ok(
+                storeSectionModelAssembler.toCollectionModel(storeService.getStoreSectionsByStoreId(id)));
+    }
+
+
+    @PostMapping(path = "/{id}/storeSections")
+    public ResponseEntity<?> addStoreSection(@PathVariable("id") Long id, @RequestBody List<StoreSectionCreateDto> createDtos) {
+        try{
+            return ResponseEntity.ok(
+                    storeSectionModelAssembler.toCollectionModel(storeService.setStoreSections(id, createDtos)));
+        }catch (DataIntegrityViolationException | IllegalAccessException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+
+    @DeleteMapping(path = "/{storeId}/storeSections/{storeSectionId}")
+    public ResponseEntity<?>  removeStoreSection(@PathVariable("storeId") Long storeId,
+                                                 @PathVariable("storeId") Long storeSectionId) {
+        try{
+            storeService.removeStoreSection(storeId, storeSectionId);
+            return ResponseEntity.noContent().build();
+        }catch (EntityNotFoundException | IllegalAccessException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 }
