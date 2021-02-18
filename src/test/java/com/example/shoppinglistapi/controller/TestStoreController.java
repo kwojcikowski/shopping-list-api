@@ -1,29 +1,28 @@
 package com.example.shoppinglistapi.controller;
 
-import com.example.shoppinglistapi.TestModelMapperConfiguration;
+import com.example.shoppinglistapi.dto.store.StoreCreateDto;
+import com.example.shoppinglistapi.model.Section;
 import com.example.shoppinglistapi.model.Store;
-import com.example.shoppinglistapi.repository.StoreRepository;
-import com.example.shoppinglistapi.service.assembler.StoreModelAssembler;
+import com.example.shoppinglistapi.model.StoreSection;
+import com.example.shoppinglistapi.service.StoreService;
 import com.example.shoppinglistapi.service.tools.normalizer.Alphabet;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import javax.persistence.EntityNotFoundException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 import static org.hamcrest.Matchers.hasSize;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.linkWithRel;
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.links;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
@@ -34,15 +33,13 @@ import static org.springframework.restdocs.request.RequestDocumentation.paramete
 import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@RunWith(SpringRunner.class)
-@ContextConfiguration(classes = {StoreModelAssembler.class})
-@WebMvcTest(controllers = StoreController.class)
-@Import({StoreController.class, TestModelMapperConfiguration.class})
 @AutoConfigureRestDocs(outputDir = "target/generated-snippets/stores")
+@SpringBootTest
+@AutoConfigureMockMvc
 public class TestStoreController {
 
     @MockBean
-    private StoreRepository storeRepository;
+    private StoreService storeService;
 
     @Autowired
     private MockMvc mockMvc;
@@ -60,7 +57,7 @@ public class TestStoreController {
                 .urlFriendlyName("store-two")
                 .build();
         List<Store> stores = List.of(store1, store2);
-        when(storeRepository.findAll()).thenReturn(stores);
+        when(storeService.getAllStores()).thenReturn(stores);
         mockMvc.perform(get("/stores"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaTypes.HAL_JSON))
@@ -87,7 +84,7 @@ public class TestStoreController {
                 .name("Store 1")
                 .urlFriendlyName("Store-1")
                 .build();
-        when(storeRepository.findById(1L)).thenReturn(Optional.ofNullable(store1));
+        when(storeService.getStoreById(1L)).thenReturn(store1);
         mockMvc.perform(get("/stores/{id}", 1))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaTypes.HAL_JSON))
@@ -114,7 +111,8 @@ public class TestStoreController {
 
     @Test
     public void testGetStoreByIdReturnNotFoundOnIncorrectId() throws Exception {
-        when(storeRepository.findById(1L)).thenReturn(Optional.empty());
+        when(storeService.getStoreById(1L)).thenThrow(new EntityNotFoundException("Unable to delete store: " +
+                "Store with given id does not exist."));
         mockMvc.perform(get("/stores/1"))
                 .andExpect(status().isNotFound());
     }
@@ -122,10 +120,13 @@ public class TestStoreController {
     @Test
     public void testAddStoreSuccessful() throws Exception {
         String postBody = "{\"name\": \"Store One\"}";
-        when(storeRepository.saveAndFlush(Mockito.any(Store.class))).thenAnswer(s -> {
-            Store addedStore = s.getArgument(0);
-            addedStore.setId(1L);
-            return addedStore;
+        when(storeService.createStore(any(StoreCreateDto.class))).thenAnswer(s -> {
+            StoreCreateDto createDto = s.getArgument(0, StoreCreateDto.class);
+            return Store.builder()
+                    .id(1L)
+                    .name(createDto.name)
+                    .urlFriendlyName("store-one")
+                    .build();
         });
         mockMvc.perform(post("/stores")
                 .contentType(MediaTypes.HAL_JSON)
@@ -155,22 +156,21 @@ public class TestStoreController {
     @Test
     public void testAddStoreReturnBadRequestOnStoreNameNotMatchingAlphabet() throws Exception {
         String postBody = "{\"name\": \"Store Ĉ\"}";
-        when(storeRepository.saveAndFlush(Mockito.any(Store.class))).thenAnswer(s -> {
-            Store addedStore = s.getArgument(0);
-            addedStore.setId(1L);
-            return addedStore;
-        });
+        when(storeService.createStore(any(StoreCreateDto.class)))
+                .thenThrow(new IllegalArgumentException("Unable to create store: " +
+                        "Name 'Store Ĉ' does not match the alphabet POLISH."));
         mockMvc.perform(post("/stores")
                 .contentType(MediaTypes.HAL_JSON)
+                .characterEncoding("utf-8")
                 .content(postBody))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("Unable to create store: " +
-                        "Name 'Store Ĉ' does not match the alphabet POLISH."));
+                .andExpect(content().string("\"Unable to create store: " +
+                        "Name 'Store Ĉ' does not match the alphabet POLISH.\""));
     }
 
     @Test
     public void testRemoveStoreSuccessful() throws Exception {
-        when(storeRepository.existsById(1L)).thenReturn(true);
+        doNothing().when(storeService).removeStoreById(1L);
         mockMvc.perform(delete("/stores/{id}", 1))
                 .andExpect(status().isNoContent())
                 .andDo(document("remove-store",
@@ -183,8 +183,124 @@ public class TestStoreController {
 
     @Test
     public void testRemoveStoreReturnNotFoundOnNonExistingId() throws Exception {
-        when(storeRepository.existsById(1L)).thenReturn(false);
+        doThrow(new EntityNotFoundException("Unable to delete store: " +
+                "Store with given id does not exist.")).when(storeService).removeStoreById(1L);
         mockMvc.perform(delete("/stores/{id}", 1))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void testGetStoreSections() throws Exception {
+        Store groceryStore = Store.builder()
+                .id(1L)
+                .name("Store One")
+                .urlFriendlyName("store-one")
+                .build();
+        Section fruits = Section.builder()
+                .id(1L)
+                .name("Fruits")
+                .build();
+        Section vegetables = Section.builder()
+                .id(2L)
+                .name("Vegetables")
+                .build();
+        StoreSection groceryFruits = StoreSection.builder()
+                .id(1L)
+                .store(groceryStore)
+                .section(fruits)
+                .position(1)
+                .build();
+        StoreSection groceryVegetables = StoreSection.builder()
+                .id(2L)
+                .store(groceryStore)
+                .section(vegetables)
+                .position(2)
+                .build();
+        List<StoreSection> storeSections = List.of(groceryFruits, groceryVegetables);
+        when(storeService.getStoreSectionsByStoreId(1L)).thenReturn(storeSections);
+        mockMvc.perform(get("/stores/{storeId}/storeSections", 1))
+                .andExpect(status().isOk())
+                .andDo(document("get-store-sections",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        responseFields(
+                                fieldWithPath("_embedded.storeSections[].id").description("The id of a store section."),
+                                subsectionWithPath("_embedded.storeSections[].store").description("Store details"),
+                                subsectionWithPath("_embedded.storeSections[].section").description("Section details"),
+                                fieldWithPath("_embedded.storeSections[].position").description("Position of a section in a store")
+                        )));
+    }
+
+    @Test
+    public void testSetStoreSections() throws Exception {
+        String postBody = "[" +
+                "{" +
+                "\"storeId\": 1," +
+                "\"sectionId\": 1," +
+                "\"position\": 1" +
+                "}," +
+                "{" +
+                "\"storeId\": 1," +
+                "\"sectionId\": 2," +
+                "\"position\": 2" +
+                "}" +
+                "]";
+        Store groceryStore = Store.builder()
+                .id(1L)
+                .name("Store One")
+                .urlFriendlyName("store-one")
+                .build();
+        Section fruits = Section.builder()
+                .id(1L)
+                .name("Fruits")
+                .build();
+        Section vegetables = Section.builder()
+                .id(2L)
+                .name("Vegetables")
+                .build();
+        StoreSection groceryFruits = StoreSection.builder()
+                .id(1L)
+                .store(groceryStore)
+                .section(fruits)
+                .position(1)
+                .build();
+        StoreSection groceryVegetables = StoreSection.builder()
+                .id(2L)
+                .store(groceryStore)
+                .section(vegetables)
+                .position(2)
+                .build();
+        List<StoreSection> storeSections = List.of(groceryFruits, groceryVegetables);
+        when(storeService.setStoreSections(anyLong(), anyList())).thenReturn(storeSections);
+        mockMvc.perform(post("/stores/{storeId}/storeSections", 1)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(postBody))
+                .andExpect(status().isOk())
+                .andDo(document("set-store-sections",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        pathParameters(
+                                parameterWithName("storeId").description("Id of a store")
+                        ),
+                        responseFields(
+                                fieldWithPath("_embedded.storeSections[].id").description("The id of a store section."),
+                                subsectionWithPath("_embedded.storeSections[].store").description("Store details"),
+                                subsectionWithPath("_embedded.storeSections[].section").description("Section details"),
+                                fieldWithPath("_embedded.storeSections[].position").description("Position of a section in a store")
+                        )));
+    }
+
+    @Test
+    public void testRemoveStoreSection() throws Exception {
+        doNothing().when(storeService).removeStoreSection(1L, 1L);
+        mockMvc.perform(delete("/stores/{storeId}/storeSections/{storeSectionId}", 1, 1))
+                .andExpect(status().isNoContent())
+                .andDo(document("remove-store-section",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        pathParameters(
+                                parameterWithName("storeId").description("Id of a store"),
+                                parameterWithName("storeSectionId").description("Id of a store section")
+                        )));
     }
 }
