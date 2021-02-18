@@ -74,7 +74,7 @@ public class StoreController {
 
 
     @PostMapping(path = "/{id}/storeSections")
-    public ResponseEntity<?> addStoreSection(@PathVariable("id") Long id, @RequestBody List<StoreSectionCreateDto> createDtos) {
+    public ResponseEntity<?> setStoreSections(@PathVariable("id") Long id, @RequestBody List<StoreSectionCreateDto> createDtos) {
         try{
             return ResponseEntity.ok(
                     storeSectionModelAssembler.toCollectionModel(storeService.setStoreSections(id, createDtos)));
@@ -86,7 +86,7 @@ public class StoreController {
 
     @DeleteMapping(path = "/{storeId}/storeSections/{storeSectionId}")
     public ResponseEntity<?>  removeStoreSection(@PathVariable("storeId") Long storeId,
-                                                 @PathVariable("storeId") Long storeSectionId) {
+                                                 @PathVariable("storeSectionId") Long storeSectionId) {
         try{
             storeService.removeStoreSection(storeId, storeSectionId);
             return ResponseEntity.noContent().build();
