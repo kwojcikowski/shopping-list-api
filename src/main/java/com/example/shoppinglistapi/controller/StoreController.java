@@ -75,22 +75,22 @@ public class StoreController {
 
     @PostMapping(path = "/{id}/storeSections")
     public ResponseEntity<?> setStoreSections(@PathVariable("id") Long id, @RequestBody List<StoreSectionCreateDto> createDtos) {
-        try{
+        try {
             return ResponseEntity.ok(
                     storeSectionModelAssembler.toCollectionModel(storeService.setStoreSections(id, createDtos)));
-        }catch (DataIntegrityViolationException | IllegalAccessException e) {
+        } catch (DataIntegrityViolationException | IllegalAccessException | EntityNotFoundException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
 
     @DeleteMapping(path = "/{storeId}/storeSections/{storeSectionId}")
-    public ResponseEntity<?>  removeStoreSection(@PathVariable("storeId") Long storeId,
-                                                 @PathVariable("storeSectionId") Long storeSectionId) {
-        try{
+    public ResponseEntity<?> removeStoreSection(@PathVariable("storeId") Long storeId,
+                                                @PathVariable("storeSectionId") Long storeSectionId) {
+        try {
             storeService.removeStoreSection(storeId, storeSectionId);
             return ResponseEntity.noContent().build();
-        }catch (EntityNotFoundException | IllegalAccessException e) {
+        } catch (EntityNotFoundException | IllegalAccessException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
