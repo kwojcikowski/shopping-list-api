@@ -12,6 +12,7 @@ import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDoc
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -291,11 +292,140 @@ public class TestStoreController {
     }
 
     @Test
+    public void testSetStoreSectionsReturnBadRequestOnNonUniquePosition() throws Exception {
+        String postBody = "[" +
+                "{" +
+                "\"storeId\": 1," +
+                "\"sectionId\": 1," +
+                "\"position\": 1" +
+                "}," +
+                "{" +
+                "\"storeId\": 1," +
+                "\"sectionId\": 2," +
+                "\"position\": 1" +
+                "}" +
+                "]";
+        when(storeService.setStoreSections(anyLong(), anyList()))
+                .thenThrow(new DataIntegrityViolationException("Unable to update store sections: " +
+                        "Each section of a store must have a unique position."));
+        mockMvc.perform(post("/stores/{storeId}/storeSections", 1)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(postBody))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("\"Unable to update store sections: " +
+                        "Each section of a store must have a unique position.\""))
+                .andDo(document("set-store-sections-non-unique-position",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        pathParameters(
+                                parameterWithName("storeId").description("Id of a store")
+                        )));
+    }
+
+    @Test
+    public void testSetStoreSectionsReturnBadRequestOnWrongStoreReference() throws Exception {
+        String postBody = "[" +
+                "{" +
+                "\"storeId\": 1," +
+                "\"sectionId\": 1," +
+                "\"position\": 1" +
+                "}," +
+                "{" +
+                "\"storeId\": 2," +
+                "\"sectionId\": 2," +
+                "\"position\": 3" +
+                "}" +
+                "]";
+        when(storeService.setStoreSections(anyLong(), anyList()))
+                .thenThrow(new IllegalAccessException("Unable to update store sections: " +
+                        "At least one of the given store sections does not refer to selected store."));
+        mockMvc.perform(post("/stores/{storeId}/storeSections", 1)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(postBody))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("\"Unable to update store sections: " +
+                        "At least one of the given store sections does not refer to selected store.\""))
+                .andDo(document("set-store-sections-wrong-store-ref",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        pathParameters(
+                                parameterWithName("storeId").description("Id of a store")
+                        )));
+    }
+
+    @Test
+    public void testSetStoreSectionsReturnBadRequestOnNonExistingSection() throws Exception {
+        String postBody = "[" +
+                "{" +
+                "\"storeId\": 1," +
+                "\"sectionId\": 1," +
+                "\"position\": 1" +
+                "}," +
+                "{" +
+                "\"storeId\": 1," +
+                "\"sectionId\": 99," +
+                "\"position\": 2" +
+                "}" +
+                "]";
+        when(storeService.setStoreSections(anyLong(), anyList()))
+                .thenThrow(new EntityNotFoundException("Unable to update store sections: " +
+                        "Section with given id does not exist."));
+        mockMvc.perform(post("/stores/{storeId}/storeSections", 1)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(postBody))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("\"Unable to update store sections: " +
+                        "Section with given id does not exist.\""))
+                .andDo(document("set-store-sections-non-existing-store",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        pathParameters(
+                                parameterWithName("storeId").description("Id of a store")
+                        )));
+    }
+
+    @Test
     public void testRemoveStoreSection() throws Exception {
         doNothing().when(storeService).removeStoreSection(1L, 1L);
         mockMvc.perform(delete("/stores/{storeId}/storeSections/{storeSectionId}", 1, 1))
                 .andExpect(status().isNoContent())
                 .andDo(document("remove-store-section",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        pathParameters(
+                                parameterWithName("storeId").description("Id of a store"),
+                                parameterWithName("storeSectionId").description("Id of a store section")
+                        )));
+    }
+
+    @Test
+    public void testRemoveStoreSectionReturnBadRequestOnNonExistingStoreSection() throws Exception {
+        doThrow(new EntityNotFoundException("Unable to delete store section: " +
+                "Store section with given id does not exist."))
+                .when(storeService).removeStoreSection(1L, 99L);
+        mockMvc.perform(delete("/stores/{storeId}/storeSections/{storeSectionId}", 1, 99))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("\"Unable to delete store section: " +
+                        "Store section with given id does not exist.\""))
+                .andDo(document("remove-store-section-non-existing-store-section",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        pathParameters(
+                                parameterWithName("storeId").description("Id of a store"),
+                                parameterWithName("storeSectionId").description("Id of a store section")
+                        )));
+    }
+
+    @Test
+    public void testRemoveStoreSectionReturnBadRequestOnNonWrongStoreReference() throws Exception {
+        doThrow(new IllegalAccessException("Unable to delete store section: " +
+                "Given store section does not refer to this store."))
+                .when(storeService).removeStoreSection(99L, 1L);
+        mockMvc.perform(delete("/stores/{storeId}/storeSections/{storeSectionId}", 99, 1))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("\"Unable to delete store section: " +
+                        "Given store section does not refer to this store.\""))
+                .andDo(document("remove-store-section-wrong-store-ref",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
                         pathParameters(
