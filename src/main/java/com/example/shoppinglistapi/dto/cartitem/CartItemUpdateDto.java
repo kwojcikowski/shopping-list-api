@@ -1,6 +1,9 @@
 package com.example.shoppinglistapi.dto.cartitem;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -10,10 +13,10 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CartItemCreateDto {
+public class CartItemUpdateDto {
 
     @Min(1)
-    public Long productId;
+    public Long id;
     @Min(1)
     public Long unitId;
     @NotNull
