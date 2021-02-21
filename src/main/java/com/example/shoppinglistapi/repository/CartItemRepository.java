@@ -11,5 +11,5 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 @CrossOrigin
 @RepositoryRestResource
 public interface CartItemRepository extends JpaRepository<CartItem, Long> {
-    CartItem findByProductAndUnit_BaseUnit(@Param("product") Product product, @Param("baseUnit") BaseUnit baseUnit);
+    CartItem findByProduct_IdAndUnit_BaseUnit_Id(@Param("productId") Long productId, @Param("baseUnitId") Long baseUnitId);
 }

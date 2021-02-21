@@ -1,14 +1,16 @@
 package com.example.shoppinglistapi.service;
 
+import com.example.shoppinglistapi.dto.cartitem.CartItemCreateDto;
+import com.example.shoppinglistapi.dto.cartitem.CartItemUpdateDto;
 import com.example.shoppinglistapi.model.CartItem;
-import com.example.shoppinglistapi.service.exception.CartItemException;
 
+import javax.persistence.EntityNotFoundException;
 import java.util.List;
 
 public interface CartItemService {
-    Iterable<CartItem> getAllCartItems();
-    CartItem findCartItem(Long id) throws CartItemException;
-    CartItem addCartItem(CartItem cartItem);
-    List<CartItem> updateCartItems(List<CartItem> cartItems) throws CartItemException;
-    void deleteCartItemById(Long id) throws CartItemException;
+    List<CartItem> getAllCartItems();
+    CartItem findCartItem(Long id) throws EntityNotFoundException;
+    CartItem addCartItem(CartItemCreateDto createDto) throws EntityNotFoundException;
+    List<CartItem> updateCartItems(List<CartItemUpdateDto> cartItems) throws EntityNotFoundException;
+    void deleteCartItemById(Long id) throws EntityNotFoundException;
 }
