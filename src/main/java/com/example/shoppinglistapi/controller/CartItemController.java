@@ -1,21 +1,22 @@
 package com.example.shoppinglistapi.controller;
 
+import com.example.shoppinglistapi.dto.cartitem.CartItemCreateDto;
+import com.example.shoppinglistapi.dto.cartitem.CartItemReadDto;
+import com.example.shoppinglistapi.dto.cartitem.CartItemUpdateDto;
 import com.example.shoppinglistapi.model.CartItem;
 import com.example.shoppinglistapi.service.CartItemService;
 import com.example.shoppinglistapi.service.assembler.CartItemModelAssembler;
-import com.example.shoppinglistapi.dto.cartitem.CartItemReadDto;
-import com.example.shoppinglistapi.service.exception.CartItemException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.persistence.EntityNotFoundException;
+import javax.validation.Valid;
 import java.net.URI;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RepositoryRestController
 @CrossOrigin
@@ -25,41 +26,40 @@ public class CartItemController {
 
     private final @NonNull CartItemModelAssembler cartItemModelAssembler;
     private final @NonNull CartItemService cartItemService;
-    private final @NonNull ModelMapper modelMapper;
 
     @GetMapping
-    public ResponseEntity<CollectionModel<CartItemReadDto>> getAllCartItems(){
+    public ResponseEntity<CollectionModel<CartItemReadDto>> getAllCartItems() {
         return ResponseEntity.ok(cartItemModelAssembler.toCollectionModel(cartItemService.getAllCartItems()));
     }
 
     @GetMapping(path = "/{id}")
-    public ResponseEntity<CartItemReadDto> getCartItemById(@PathVariable("id") Long id){
+    public ResponseEntity<CartItemReadDto> getCartItemById(@PathVariable("id") Long id) {
         try {
             return ResponseEntity.ok(cartItemModelAssembler.toModel(cartItemService.findCartItem(id)));
-        } catch (CartItemException e) {
+        } catch (EntityNotFoundException e) {
             return ResponseEntity.notFound().build();
         }
     }
 
     @PostMapping
-    public ResponseEntity<CartItemReadDto> addCartItem(@RequestBody CartItemReadDto cartItemFromRequest){
-        CartItem mappedCartItem = modelMapper.map(cartItemFromRequest, CartItem.class);
-        CartItem addedCartItem = cartItemService.addCartItem(mappedCartItem);
-        CartItemReadDto returnCartItem = cartItemModelAssembler.toModel(addedCartItem);
-        return ResponseEntity.created(URI.create(returnCartItem.getLink("self").get().getHref()))
-                .body(returnCartItem);
+    public ResponseEntity<?> addCartItem(@RequestBody @Valid CartItemCreateDto createDto) {
+        CartItem addedCartItem = cartItemService.addCartItem(createDto);
+        try {
+            CartItemReadDto returnCartItem = cartItemModelAssembler.toModel(addedCartItem);
+            URI cartItemUri = URI.create(returnCartItem.getLinks().getRequiredLink("self").getHref());
+            return ResponseEntity.created(cartItemUri).body(returnCartItem);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @PatchMapping
-    public ResponseEntity<CartItemReadDto> updateCartItems(@RequestBody List<CartItemReadDto> cartItemsFromRequest) {
+    public ResponseEntity<?> updateCartItems(@RequestBody @Valid List<CartItemUpdateDto> requestCart) {
         try {
-            cartItemService.updateCartItems(cartItemsFromRequest
-                    .stream()
-                    .map(cartItemDTO -> modelMapper.map(cartItemDTO, CartItem.class))
-                    .collect(Collectors.toList()));
-            return ResponseEntity.noContent().build();
-        } catch (CartItemException e){
-            return ResponseEntity.notFound().build();
+            List<CartItem> updatedCartItems = cartItemService.updateCartItems(requestCart);
+            return ResponseEntity.ok(cartItemModelAssembler.toCollectionModel(updatedCartItems));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
@@ -68,8 +68,8 @@ public class CartItemController {
         try {
             cartItemService.deleteCartItemById(id);
             return ResponseEntity.noContent().build();
-        }catch (CartItemException e){
-            return ResponseEntity.notFound().build();
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 }
