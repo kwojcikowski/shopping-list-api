@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
@@ -17,8 +18,8 @@ public class CartItemUpdateDto {
 
     @Min(1)
     public Long id;
-    @Min(1)
-    public Long unitId;
+    @NotBlank
+    public String unitAbbreviation;
     @NotNull
     public BigDecimal quantity;
 

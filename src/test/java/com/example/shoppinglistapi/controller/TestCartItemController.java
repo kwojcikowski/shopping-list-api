@@ -1,22 +1,21 @@
 package com.example.shoppinglistapi.controller;
 
-import com.example.shoppinglistapi.TestModelMapperConfiguration;
-import com.example.shoppinglistapi.model.*;
+import com.example.shoppinglistapi.dto.cartitem.CartItemCreateDto;
+import com.example.shoppinglistapi.model.CartItem;
+import com.example.shoppinglistapi.model.Product;
+import com.example.shoppinglistapi.model.Section;
+import com.example.shoppinglistapi.model.unit.Unit;
 import com.example.shoppinglistapi.service.CartItemService;
-import com.example.shoppinglistapi.service.assembler.CartItemModelAssembler;
-import com.example.shoppinglistapi.service.exception.CartItemException;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
+import javax.persistence.EntityNotFoundException;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -31,64 +30,55 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(SpringRunner.class)
-@ContextConfiguration(classes = {CartItemModelAssembler.class})
-@WebMvcTest(controllers = CartItemController.class)
-@Import({CartItemController.class,
-        TestModelMapperConfiguration.class})
+
 @AutoConfigureRestDocs(outputDir = "target/generated-snippets/cart-items")
+@SpringBootTest
+@AutoConfigureMockMvc
 public class TestCartItemController {
 
     @MockBean
     private CartItemService cartItemService;
-
     @Autowired
     private MockMvc mockMvc;
 
-    Section dairy = Section.builder()
-            .id(1L)
-            .name("Dairy")
-            .build();
-    Prefix none = Prefix.builder()
-            .id(1L)
-            .name("NONE")
-            .abbreviation("")
-            .scale(1.0)
-            .build();
-    BaseUnit baseUnitLiter = BaseUnit.builder()
-            .id(1L)
-            .name("LITER")
-            .abbreviation("l")
-            .build();
-    Unit liter = Unit.builder()
-            .id(1L)
-            .baseUnit(baseUnitLiter)
-            .prefix(none)
-            .build();
-    Product milk = Product.builder()
-            .id(1L)
-            .name("Milk")
-            .defaultUnit(liter)
-            .section(dairy)
-            .build();
-
     @Test
     public void testGetAllCartItems() throws Exception {
-        CartItem cartItem1 = CartItem.builder()
+        Section dairy = Section.builder()
                 .id(1L)
-                .product(milk)
-                .unit(liter)
-                .quantity(new BigDecimal("2.5"))
+                .name("Dairy")
                 .build();
-        CartItem cartItem2 = CartItem.builder()
+        Section fruits = Section.builder()
                 .id(2L)
-                .product(milk)
-                .unit(liter)
+                .name("Fruits")
+                .build();
+        Product milk = Product.builder()
+                .id(1L)
+                .name("Milk")
+                .defaultUnit(Unit.LITER)
+                .section(dairy)
+                .build();
+        Product banana = Product.builder()
+                .id(2L)
+                .name("Banana")
+                .defaultUnit(Unit.PIECE)
+                .section(fruits)
+                .build();
+        CartItem bananaCartItem = CartItem.builder()
+                .id(1L)
+                .product(banana)
+                .unit(Unit.PIECE)
                 .quantity(new BigDecimal("4"))
                 .build();
-        when(cartItemService.getAllCartItems()).thenReturn(List.of(cartItem1, cartItem2));
+        CartItem milkCartItem = CartItem.builder()
+                .id(2L)
+                .product(milk)
+                .unit(Unit.MILLILITER)
+                .quantity(new BigDecimal("250"))
+                .build();
+        when(cartItemService.getAllCartItems()).thenReturn(List.of(bananaCartItem, milkCartItem));
         mockMvc.perform(get("/cartItems"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaTypes.HAL_JSON))
@@ -111,13 +101,23 @@ public class TestCartItemController {
 
     @Test
     public void testGetCartItemByIdSuccessful() throws Exception {
-        CartItem cartItem1 = CartItem.builder()
-                .id(1L)
-                .product(milk)
-                .unit(liter)
-                .quantity(new BigDecimal("2.5"))
+        Section fruits = Section.builder()
+                .id(2L)
+                .name("Fruits")
                 .build();
-        when(cartItemService.findCartItem(1L)).thenReturn(cartItem1);
+        Product banana = Product.builder()
+                .id(2L)
+                .name("Banana")
+                .defaultUnit(Unit.PIECE)
+                .section(fruits)
+                .build();
+        CartItem bananaCartItem = CartItem.builder()
+                .id(1L)
+                .product(banana)
+                .unit(Unit.PIECE)
+                .quantity(new BigDecimal("4"))
+                .build();
+        when(cartItemService.findCartItem(1L)).thenReturn(bananaCartItem);
         mockMvc.perform(get("/cartItems/{id}", 1))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaTypes.HAL_JSON))
@@ -148,52 +148,51 @@ public class TestCartItemController {
 
     @Test
     public void testGetCartItemByIdReturnNotFoundOnNonExistingId() throws Exception {
-        when(cartItemService.findCartItem(1L)).thenThrow(new CartItemException());
+        when(cartItemService.findCartItem(1L)).thenThrow(new EntityNotFoundException());
         mockMvc.perform(get("/cartItems/{id}", 1))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     public void testAddCartItemSuccessful() throws Exception {
+        Section fruits = Section.builder()
+                .id(1L)
+                .name("Fruits")
+                .build();
+        Product banana = Product.builder()
+                .id(1L)
+                .name("Banana")
+                .defaultUnit(Unit.PIECE)
+                .section(fruits)
+                .build();
         String postBody =
                 "{" +
-                "\"product\": {" +
-                "   \"id\": 1," +
-                "   \"name\": \"Product One\"," +
-                "   \"defaultUnit\": {" +
-                "       \"id\": 1," +
-                "       \"abbreviation\": \"l\"" +
-                "       }," +
-                "   \"section\": {" +
-                "       \"id\": 1," +
-                "       \"name\": \"Section One\"" +
-                "       }" +
-                "   }," +
-                "\"unit\": {" +
-                "   \"id\": 1," +
-                "   \"abbreviation\": \"l\"" +
-                "   }," +
-                "\"quantity\": \"2.5\"" +
-                "}";
-        when(cartItemService.addCartItem(any(CartItem.class)))
+                        "\"productId\": 1," +
+                        "\"unitAbbreviation\": \"pcs\"," +
+                        "\"quantity\": 5" +
+                        "}";
+        when(cartItemService.addCartItem(any(CartItemCreateDto.class)))
                 .thenAnswer(c -> {
-                    CartItem addedCartItem = c.getArgument(0);
-                    addedCartItem.setId(1L);
-                    addedCartItem.setUnit(liter);
-                    return addedCartItem;
+                    CartItemCreateDto addedCartItem = c.getArgument(0);
+                    return CartItem.builder()
+                            .id(1L)
+                            .product(banana)
+                            .unit(Unit.fromAbbreviation(addedCartItem.unitAbbreviation))
+                            .quantity(addedCartItem.quantity)
+                            .build();
                 });
         mockMvc.perform(post("/cartItems")
-                    .contentType(MediaTypes.HAL_JSON)
-                    .content(postBody))
+                .contentType(MediaTypes.HAL_JSON)
+                .content(postBody))
                 .andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaTypes.HAL_JSON))
                 .andDo(document("add-cart-item",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
                         requestFields(
-                                subsectionWithPath("product")
-                                        .description("Product that is to be added to a cart."),
-                                subsectionWithPath("unit")
+                                subsectionWithPath("productId")
+                                        .description("Id of a product that is to be added to a cart."),
+                                subsectionWithPath("unitAbbreviation")
                                         .description("Chosen unit of a product."),
                                 fieldWithPath("quantity")
                                         .description("Quantity of a unit.")
@@ -218,113 +217,105 @@ public class TestCartItemController {
 
     @Test
     public void testUpdateCartItemsSuccessful() throws Exception {
-        String patchBody = "[" +
-                "{" +
-                "   \"id\": 1," +
-                "   \"product\": {" +
-                "       \"id\": 1," +
-                "       \"name\": \"Product One\"," +
-                "       \"defaultUnit\": {" +
-                "           \"id\": 1," +
-                "           \"abbreviation\": \"l\"" +
-                "       }," +
-                "       \"section\": {" +
-                "           \"id\": 1," +
-                "           \"name\": \"Section One\"" +
-                "       }" +
-                "   }," +
-                "   \"unit\": {" +
-                "       \"id\": 1," +
-                "       \"abbreviation\": \"l\"}," +
-                "   \"quantity\": \"2.5\"" +
-                "   }," +
-                "{" +
-                "   \"id\": 2," +
-                "   \"product\": {" +
-                "       \"id\": 2," +
-                "       \"name\": \"Product Two\"," +
-                "       \"defaultUnit\": {" +
-                "           \"id\": 2," +
-                "           \"abbreviation\": \"kg\"" +
-                "       }," +
-                "       \"section\": {" +
-                "           \"id\": 2," +
-                "           \"name\": \"Section Two\"" +
-                "       }" +
-                "   }," +
-                "   \"unit\": {" +
-                "       \"id\": 1," +
-                "       \"abbreviation\": \"g\"" +
-                "   }," +
-                "   \"quantity\": \"50\"" +
-                "}" +
-                "]";
-        when(cartItemService.updateCartItems(anyList())).thenReturn(anyList());
+        Section dairy = Section.builder()
+                .id(1L)
+                .name("Dairy")
+                .build();
+        Section fruits = Section.builder()
+                .id(2L)
+                .name("Fruits")
+                .build();
+        Product milk = Product.builder()
+                .id(1L)
+                .name("Milk")
+                .defaultUnit(Unit.LITER)
+                .section(dairy)
+                .build();
+        Product banana = Product.builder()
+                .id(2L)
+                .name("Banana")
+                .defaultUnit(Unit.PIECE)
+                .section(fruits)
+                .build();
+        CartItem expectedBananaCartItem = CartItem.builder()
+                .id(1L)
+                .product(banana)
+                .unit(Unit.PIECE)
+                .quantity(new BigDecimal("1"))
+                .build();
+        CartItem expectedMilkCartItem = CartItem.builder()
+                .id(2L)
+                .product(milk)
+                .unit(Unit.LITER)
+                .quantity(new BigDecimal("3"))
+                .build();
+
+        String patchBody =
+                "[" +
+                        "{" +
+                        "\"id\": 1," +
+                        "\"unitAbbreviation\": \"pcs\"," +
+                        "\"quantity\": 1" +
+                        "}," +
+                        "{" +
+                        "\"id\": 2," +
+                        "\"unitAbbreviation\": \"l\"," +
+                        "\"quantity\": 3" +
+                        "}" +
+                        "]";
+        when(cartItemService.updateCartItems(anyList()))
+                .thenReturn(List.of(expectedBananaCartItem, expectedMilkCartItem));
         mockMvc.perform(patch("/cartItems")
-                    .contentType(MediaTypes.HAL_JSON)
-                    .content(patchBody))
-                .andExpect(status().isNoContent())
+                .contentType(MediaTypes.HAL_JSON)
+                .content(patchBody))
+                .andExpect(status().isOk())
                 .andDo(document("update-cart-items",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
                         requestFields(
                                 subsectionWithPath("[].id")
                                         .description("The id of a cart item to update."),
-                                subsectionWithPath("[].product")
-                                        .description("Cart item product."),
-                                subsectionWithPath("[].unit")
+                                fieldWithPath("[].unitAbbreviation")
                                         .description("Unit of a product."),
                                 fieldWithPath("[].quantity")
                                         .description("Quantity of a unit.")
+                        ),
+                        responseFields(
+                                fieldWithPath("_embedded.cartItems[].id")
+                                        .description("A unique identifier for this cart item."),
+                                subsectionWithPath("_embedded.cartItems[].product")
+                                        .description("Product that is added to the cart."),
+                                subsectionWithPath("_embedded.cartItems[].unit")
+                                        .description("Unit of a product"),
+                                fieldWithPath("_embedded.cartItems[].quantity")
+                                        .description("Quantity of a unit."),
+                                subsectionWithPath("_embedded.cartItems[]._links")
+                                        .description("Links to resources.")
                         )));
     }
 
     @Test
-    public void testUpdateCartItemsReturnNotFoundOnNonExistingId() throws Exception {
-        String patchBody = "[" +
-                "{" +
-                "   \"product\": {" +
-                "       \"id\": 1," +
-                "       \"name\": \"Product One\"," +
-                "       \"defaultUnit\": {" +
-                "           \"id\": 1," +
-                "           \"abbreviation\": \"l\"" +
-                "       }," +
-                "       \"section\": {" +
-                "           \"id\": 1," +
-                "           \"name\": \"Section One\"" +
-                "       }" +
-                "   }," +
-                "   \"unit\": {" +
-                "       \"id\": 1," +
-                "       \"abbreviation\": \"l\"}," +
-                "   \"quantity\": \"2.5\"" +
-                "   }," +
-                "{" +
-                "   \"product\": {" +
-                "       \"id\": 2," +
-                "       \"name\": \"Product Two\"," +
-                "       \"defaultUnit\": {" +
-                "           \"id\": 3," +
-                "           \"abbreviation\": \"kg\"" +
-                "       }," +
-                "       \"section\": {" +
-                "           \"id\": 2," +
-                "           \"name\": \"Section Two\"" +
-                "       }" +
-                "   }," +
-                "   \"unit\": {" +
-                "       \"id\": 2," +
-                "       \"abbreviation\": \"g\"" +
-                "   }," +
-                "   \"quantity\": \"50\"" +
-                "}" +
-                "]";
-        when(cartItemService.updateCartItems(anyList())).thenThrow(CartItemException.class);
+    public void testUpdateCartItemsReturnBadRequestOnNonExistingCartItem() throws Exception {
+        String patchBody =
+                "[" +
+                        "{" +
+                        "\"id\": 1," +
+                        "\"unitAbbreviation\": \"pcs\"," +
+                        "\"quantity\": 1" +
+                        "}," +
+                        "{" +
+                        "\"id\": 2," +
+                        "\"unitAbbreviation\": \"l\"," +
+                        "\"quantity\": 3" +
+                        "}" +
+                        "]";
+        when(cartItemService.updateCartItems(anyList()))
+                .thenThrow(new EntityNotFoundException("Unable to update cart item: Unable to fetch cart item: " +
+                        "Cart item with given id does not exist."));
         mockMvc.perform(patch("/cartItems")
                 .contentType(MediaTypes.HAL_JSON)
                 .content(patchBody))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -342,9 +333,9 @@ public class TestCartItemController {
     }
 
     @Test
-    public void testDeleteCartItemReturnNotFoundOnNonExistingId() throws Exception {
-        doThrow(CartItemException.class).when(cartItemService).deleteCartItemById(1L);
+    public void testDeleteCartItemReturnBadRequestOnNonExistingId() throws Exception {
+        doThrow(EntityNotFoundException.class).when(cartItemService).deleteCartItemById(1L);
         mockMvc.perform(delete("/cartItems/{id}", 1))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isBadRequest());
     }
 }

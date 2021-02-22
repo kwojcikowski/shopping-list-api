@@ -1,5 +1,6 @@
 package com.example.shoppinglistapi.model;
 
+import com.example.shoppinglistapi.model.unit.Unit;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
@@ -22,7 +23,6 @@ public class Product {
     @NonNull
     private String name;
 
-    @ManyToOne
     @NonNull
     private Unit defaultUnit;
 

@@ -3,11 +3,10 @@ package com.example.shoppinglistapi.service.impl;
 import com.example.shoppinglistapi.dto.cartitem.CartItemUpdateDto;
 import com.example.shoppinglistapi.model.CartItem;
 import com.example.shoppinglistapi.model.Product;
-import com.example.shoppinglistapi.model.Unit;
+import com.example.shoppinglistapi.model.unit.Unit;
 import com.example.shoppinglistapi.repository.CartItemRepository;
-import com.example.shoppinglistapi.repository.ProductRepository;
-import com.example.shoppinglistapi.repository.UnitRepository;
 import com.example.shoppinglistapi.service.CartItemService;
+import com.example.shoppinglistapi.service.ProductService;
 import org.junit.jupiter.api.Test;
 
 import javax.persistence.EntityNotFoundException;
@@ -24,11 +23,10 @@ import static org.mockito.Mockito.*;
 public class TestCartItemServiceImpl {
 
     private final CartItemRepository cartItemRepository = mock(CartItemRepository.class);
-    private final UnitRepository unitRepository = mock(UnitRepository.class);
-    private final ProductRepository productRepository = mock(ProductRepository.class);
+    private final ProductService productService = mock(ProductService.class);
 
     private final CartItemService cartItemService =
-            new CartItemServiceImpl(cartItemRepository, unitRepository, productRepository);
+            new CartItemServiceImpl(cartItemRepository, productService);
 
     @Test
     public void testFindAllCartItems() {
@@ -89,46 +87,44 @@ public class TestCartItemServiceImpl {
     @Test
     public void testUpdateCartItems() {
         Product mockProduct = mock(Product.class);
-        Unit mockUnit = mock(Unit.class);
         CartItem cartItem = CartItem.builder()
                 .id(1L)
                 .product(mockProduct)
-                .unit(mockUnit)
+                .unit(Unit.PIECE)
                 .quantity(BigDecimal.ONE)
                 .build();
         CartItem cartItem1 = CartItem.builder()
                 .id(2L)
                 .product(mockProduct)
-                .unit(mockUnit)
+                .unit(Unit.KILOGRAM)
                 .quantity(BigDecimal.TEN)
                 .build();
 
         CartItemUpdateDto cartItemUpdateDto = CartItemUpdateDto.builder()
                 .id(1L)
-                .unitId(1L)
+                .unitAbbreviation("g")
                 .quantity(new BigDecimal("30"))
                 .build();
         CartItemUpdateDto cartItemUpdateDto1 = CartItemUpdateDto.builder()
                 .id(2L)
-                .unitId(1L)
+                .unitAbbreviation("kg")
                 .quantity(new BigDecimal("5"))
                 .build();
 
         when(cartItemRepository.findById(1L)).thenReturn(Optional.ofNullable(cartItem));
         when(cartItemRepository.findById(2L)).thenReturn(Optional.ofNullable(cartItem1));
-        when(unitRepository.findById(1L)).thenReturn(Optional.ofNullable(mockUnit));
         when(cartItemRepository.saveAll(anyIterable())).thenAnswer(p -> p.getArgument(0));
 
         CartItem expectedCartItem = CartItem.builder()
                 .id(1L)
                 .product(mockProduct)
-                .unit(mockUnit)
+                .unit(Unit.GRAM)
                 .quantity(new BigDecimal("30"))
                 .build();
         CartItem expectedCartItem1 = CartItem.builder()
                 .id(2L)
                 .product(mockProduct)
-                .unit(mockUnit)
+                .unit(Unit.KILOGRAM)
                 .quantity(new BigDecimal("5"))
                 .build();
         List<CartItem> expectedCartItems = List.of(expectedCartItem, expectedCartItem1);
@@ -145,12 +141,12 @@ public class TestCartItemServiceImpl {
     public void testUpdateCartItemsThrowExceptionOnNonExistingCartItem() {
         CartItemUpdateDto cartItemUpdateDto = CartItemUpdateDto.builder()
                 .id(1L)
-                .unitId(1L)
+                .unitAbbreviation("ml")
                 .quantity(new BigDecimal("30"))
                 .build();
         CartItemUpdateDto cartItemUpdateDto1 = CartItemUpdateDto.builder()
                 .id(2L)
-                .unitId(1L)
+                .unitAbbreviation("kg")
                 .quantity(new BigDecimal("5"))
                 .build();
 
@@ -170,17 +166,30 @@ public class TestCartItemServiceImpl {
     public void testUpdateCartItemsThrowExceptionOnNonExistingUnit() {
         CartItemUpdateDto cartItemUpdateDto = CartItemUpdateDto.builder()
                 .id(1L)
-                .unitId(1L)
+                .unitAbbreviation("g")
                 .quantity(new BigDecimal("30"))
                 .build();
         CartItemUpdateDto cartItemUpdateDto1 = CartItemUpdateDto.builder()
                 .id(2L)
-                .unitId(1L)
+                .unitAbbreviation("non-existing-unit")
                 .quantity(new BigDecimal("5"))
                 .build();
 
-        when(cartItemRepository.findById(1L)).thenReturn(Optional.ofNullable(mock(CartItem.class)));
-        when(unitRepository.findById(1L)).thenReturn(Optional.empty());
+        CartItem existingCartItem = CartItem.builder()
+                .id(1L)
+                .product(mock(Product.class))
+                .unit(Unit.KILOGRAM)
+                .quantity(new BigDecimal("3"))
+                .build();
+        CartItem existingCartItem1 = CartItem.builder()
+                .id(2L)
+                .product(mock(Product.class))
+                .unit(Unit.GRAM)
+                .quantity(new BigDecimal("3"))
+                .build();
+
+        when(cartItemRepository.findById(1L)).thenReturn(Optional.ofNullable(existingCartItem));
+        when(cartItemRepository.findById(2L)).thenReturn(Optional.ofNullable(existingCartItem1));
 
         Exception expectedException = assertThrows(
                 EntityNotFoundException.class,
@@ -189,7 +198,7 @@ public class TestCartItemServiceImpl {
         );
 
         assertThat(expectedException.getMessage()).isEqualTo("Unable to update cart item: " +
-                "Unable to create cart item: Unit with given id does not exist.");
+                "Unable to find unit with provided abbreviation.");
     }
 
     @Test

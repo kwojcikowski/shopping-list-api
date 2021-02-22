@@ -1,4 +1,5 @@
 package com.example.shoppinglistapi.model;
+import com.example.shoppinglistapi.model.unit.Unit;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 
@@ -22,7 +23,6 @@ public class CartItem{
     @NonNull
     private Product product;
 
-    @ManyToOne
     @NonNull
     private Unit unit;
 

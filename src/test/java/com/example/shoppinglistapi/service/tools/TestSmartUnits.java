@@ -1,44 +1,30 @@
 package com.example.shoppinglistapi.service.tools;
 
-import com.example.shoppinglistapi.model.*;
-import com.example.shoppinglistapi.repository.UnitRepository;
+import com.example.shoppinglistapi.model.CartItem;
+import com.example.shoppinglistapi.model.Product;
+import com.example.shoppinglistapi.model.unit.Unit;
 import com.example.shoppinglistapi.service.tools.collector.CustomCollector;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class TestSmartUnits {
 
-    List<Unit> supportedUnits;
-
-    TestSmartUnits() throws IOException {
-        UnitRepository unitRepository = mock(UnitRepository.class);
-        when(unitRepository.findAllByBaseUnitIdOrderByPrefix_ScaleAsc(anyLong())).thenAnswer(invocationOnMock ->
-                supportedUnits
-                        .stream()
-                        .filter(unit -> unit.getBaseUnit().getId().equals(invocationOnMock.getArgument(0)))
-                        .collect(Collectors.toList()));
-        SmartUnits.unitRepository = unitRepository;
-        this.supportedUnits = JsonFileService.loadCollectionFromFile(FilePath.UNITS_FILE_PATH, Unit.class);
-    }
+    List<Unit> supportedUnits = List.of(Unit.values());
 
     @Test
-    public void testEvaluateBestUnitSingleCartItem(){
+    public void testEvaluateBestUnitSingleCartItem() {
         Product mockProduct = mock(Product.class);
 
         CartItem cartItemGrams = new CartItem(mockProduct, findUnitByAbbreviation("g"), new BigDecimal(1000));
         CartItem cartItemKilograms = new CartItem(mockProduct, findUnitByAbbreviation("kg"), new BigDecimal("0.01"));
-        CartItem cartItemPieces = new CartItem(mockProduct, findUnitByAbbreviation("szt"), new BigDecimal(2000));
+        CartItem cartItemPieces = new CartItem(mockProduct, findUnitByAbbreviation("pcs"), new BigDecimal(2000));
         CartItem cartItemLiters = new CartItem(mockProduct, findUnitByAbbreviation("l"), new BigDecimal(3));
         CartItem cartItemMilliliters = new CartItem(mockProduct, findUnitByAbbreviation("ml"), new BigDecimal(300));
 
@@ -49,11 +35,11 @@ public class TestSmartUnits {
         CartItem resultMilliliters = SmartUnits.evaluateBestUnit(cartItemMilliliters);
 
         assertAll(() -> assertThat(tuple(resultGrams.getUnit().toString(), resultGrams.getQuantity().stripTrailingZeros()))
-                .isEqualTo(tuple("kg", new BigDecimal(1))),
+                        .isEqualTo(tuple("kg", new BigDecimal(1))),
                 () -> assertThat(tuple(resultKilograms.getUnit().toString(), resultKilograms.getQuantity().stripTrailingZeros()))
                         .isEqualTo(tuple("g", new BigDecimal(10).stripTrailingZeros())),
                 () -> assertThat(tuple(resultPieces.getUnit().toString(), resultPieces.getQuantity().stripTrailingZeros()))
-                        .isEqualTo(tuple("szt", new BigDecimal(2000).stripTrailingZeros())),
+                        .isEqualTo(tuple("pcs", new BigDecimal(2000).stripTrailingZeros())),
                 () -> assertThat(tuple(resultLiters.getUnit().toString(), resultLiters.getQuantity().stripTrailingZeros()))
                         .isEqualTo(tuple("l", new BigDecimal(3).stripTrailingZeros())),
                 () -> assertThat(tuple(resultMilliliters.getUnit().toString(), resultMilliliters.getQuantity().stripTrailingZeros()))
@@ -61,7 +47,7 @@ public class TestSmartUnits {
         );
     }
 
-    private Unit findUnitByAbbreviation(String abbreviation){
+    private Unit findUnitByAbbreviation(String abbreviation) {
         return this.supportedUnits
                 .stream()
                 .filter(unit -> unit.toString().equals(abbreviation))
@@ -76,8 +62,8 @@ public class TestSmartUnits {
         CartItem cartItemGrams2 = new CartItem(mockProduct, findUnitByAbbreviation("g"), new BigDecimal(2000));
         CartItem cartItemKilograms = new CartItem(mockProduct, findUnitByAbbreviation("kg"), new BigDecimal(1));
 
-        CartItem cartItemPieces = new CartItem(mockProduct, findUnitByAbbreviation("szt"), new BigDecimal(3));
-        CartItem cartItemPieces2 = new CartItem(mockProduct, findUnitByAbbreviation("szt"), new BigDecimal(10));
+        CartItem cartItemPieces = new CartItem(mockProduct, findUnitByAbbreviation("pcs"), new BigDecimal(3));
+        CartItem cartItemPieces2 = new CartItem(mockProduct, findUnitByAbbreviation("pcs"), new BigDecimal(10));
 
         CartItem cartItemLiters = new CartItem(mockProduct, findUnitByAbbreviation("l"), new BigDecimal("0.01"));
         CartItem cartItemLiters2 = new CartItem(mockProduct, findUnitByAbbreviation("l"), new BigDecimal("0.02"));
@@ -90,11 +76,11 @@ public class TestSmartUnits {
         CartItem resultLiters = SmartUnits.evaluateBestUnit(cartItemLiters, cartItemLiters2);
 
         assertAll(() -> assertThat(tuple(resultGrams.getUnit().toString(), resultGrams.getQuantity().stripTrailingZeros()))
-                .isEqualTo(tuple("kg", new BigDecimal("1.2").stripTrailingZeros())),
+                        .isEqualTo(tuple("kg", new BigDecimal("1.2").stripTrailingZeros())),
                 () -> assertThat(tuple(resultGrams2.getUnit().toString(), resultGrams2.getQuantity().stripTrailingZeros()))
                         .isEqualTo(tuple("kg", new BigDecimal("2.2").stripTrailingZeros())),
                 () -> assertThat(tuple(resultPieces.getUnit().toString(), resultPieces.getQuantity().stripTrailingZeros()))
-                        .isEqualTo(tuple("szt", new BigDecimal(13).stripTrailingZeros())),
+                        .isEqualTo(tuple("pcs", new BigDecimal(13).stripTrailingZeros())),
                 () -> assertThat(tuple(resultLiters.getUnit().toString(), resultLiters.getQuantity().stripTrailingZeros()))
                         .isEqualTo(tuple("ml", new BigDecimal(30).stripTrailingZeros())));
     }

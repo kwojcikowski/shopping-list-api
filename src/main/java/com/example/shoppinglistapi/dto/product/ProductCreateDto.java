@@ -16,8 +16,8 @@ public class ProductCreateDto {
 
     @NotBlank
     public String name;
-    @Min(1)
-    public Long defaultUnitId;
+    @NotBlank
+    public String defaultUnitAbbreviation;
     @Min(1)
     public Long sectionId;
     @Pattern(regexp = "[a-zA-Z:/\\-1-9]+\\.(jpg|png)", message = "Image url has to end with .png or .jpg")

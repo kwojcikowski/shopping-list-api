@@ -1,8 +1,7 @@
 package com.example.shoppinglistapi.service.tools;
 
 import com.example.shoppinglistapi.model.CartItem;
-import com.example.shoppinglistapi.model.Unit;
-import com.example.shoppinglistapi.repository.UnitRepository;
+import com.example.shoppinglistapi.model.unit.Unit;
 import org.springframework.data.util.Pair;
 
 import java.math.BigDecimal;
@@ -11,8 +10,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class SmartUnits {
-
-    public static UnitRepository unitRepository;
 
     public static CartItem evaluateBestUnit(CartItem cartItem1, CartItem cartItem2){
         CartItem normalizedCartItem1 = SmartUnits.normalizeUnitAndQuantity(cartItem1);
@@ -35,7 +32,7 @@ public class SmartUnits {
     }
 
     public static CartItem evaluateBestUnit(CartItem cartItem){
-        List<Unit> availableUnits = unitRepository.findAllByBaseUnitIdOrderByPrefix_ScaleAsc(cartItem.getUnit().getBaseUnit().getId());
+        List<Unit> availableUnits = Unit.getUnitsByBaseUnitOrderedByScale(cartItem.getUnit().getBaseUnit());
         CartItem normalizedCartItem = SmartUnits.normalizeUnitAndQuantity(cartItem);
         List<Pair<Unit, BigDecimal>> unitRepresentationOptions = availableUnits.stream()
                 .map(u -> Pair.of(u, normalizedCartItem.getQuantity()
@@ -55,7 +52,4 @@ public class SmartUnits {
         return options.get(options.size() - 1);
     }
 
-    public void setUnitRepository(UnitRepository unitRepository){
-        SmartUnits.unitRepository = unitRepository;
-    }
 }

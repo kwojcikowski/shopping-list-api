@@ -13,8 +13,6 @@ import org.springframework.hateoas.server.core.Relation;
 public class UnitReadDto extends RepresentationModel<UnitReadDto> {
 
     @NonNull
-    public Long id;
-    @NonNull
     public String abbreviation;
 
     /*

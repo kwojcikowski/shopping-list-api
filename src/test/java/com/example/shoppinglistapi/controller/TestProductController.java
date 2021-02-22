@@ -1,24 +1,21 @@
 package com.example.shoppinglistapi.controller;
 
-import com.example.shoppinglistapi.TestModelMapperConfiguration;
 import com.example.shoppinglistapi.dto.product.ImageReadDto;
-import com.example.shoppinglistapi.model.*;
+import com.example.shoppinglistapi.model.Product;
+import com.example.shoppinglistapi.model.Section;
+import com.example.shoppinglistapi.model.unit.Unit;
 import com.example.shoppinglistapi.service.ProductService;
-import com.example.shoppinglistapi.service.assembler.ProductModelAssembler;
 import com.example.shoppinglistapi.service.tools.ImagesTools;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
 import javax.persistence.EntityNotFoundException;
@@ -38,34 +35,11 @@ import static org.springframework.restdocs.request.RequestDocumentation.pathPara
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(SpringRunner.class)
-@ContextConfiguration(classes = {ProductModelAssembler.class})
-@WebMvcTest(controllers = ProductController.class)
-@Import({ProductController.class,
-        TestModelMapperConfiguration.class})
 @AutoConfigureRestDocs(outputDir = "target/generated-snippets/products")
+@SpringBootTest
+@AutoConfigureMockMvc
 public class TestProductController {
 
-    final Prefix none = Prefix.builder()
-            .id(1L)
-            .name("NONE")
-            .abbreviation("")
-            .scale(1.0)
-            .build();
-    final BaseUnit baseUnitLiter = BaseUnit.builder()
-            .id(1L)
-            .name("LITER")
-            .abbreviation("l")
-            .build();
-    final Unit liter = Unit.builder()
-            .id(1L)
-            .baseUnit(baseUnitLiter)
-            .prefix(none)
-            .build();
-    final Section section = Section.builder()
-            .id(1L)
-            .name("Section One")
-            .build();
     @MockBean
     private ProductService productService;
     @Autowired
@@ -73,19 +47,27 @@ public class TestProductController {
 
     @Test
     public void testGetAllProductsSuccessful() throws Exception {
-        Product product1 = Product.builder()
+        Section dairy = Section.builder()
                 .id(1L)
-                .name("Product One")
-                .defaultUnit(liter)
-                .section(section)
+                .name("Dairy")
                 .build();
-        Product product2 = Product.builder()
+        Section fruits = Section.builder()
                 .id(2L)
-                .name("Product Two")
-                .defaultUnit(liter)
-                .section(section)
+                .name("Fruits")
                 .build();
-        List<Product> products = List.of(product1, product2);
+        Product milk = Product.builder()
+                .id(1L)
+                .name("Milk")
+                .defaultUnit(Unit.LITER)
+                .section(dairy)
+                .build();
+        Product banana = Product.builder()
+                .id(2L)
+                .name("Banana")
+                .defaultUnit(Unit.PIECE)
+                .section(fruits)
+                .build();
+        List<Product> products = List.of(milk, banana);
         when(productService.getAllProducts()).thenReturn(products);
         mockMvc.perform(get("/products"))
                 .andExpect(status().isOk())
@@ -109,13 +91,17 @@ public class TestProductController {
 
     @Test
     public void testGetProductByIdSuccessful() throws Exception {
-        Product product1 = Product.builder()
+        Section fruits = Section.builder()
                 .id(1L)
-                .name("Product 1")
-                .defaultUnit(liter)
-                .section(section)
+                .name("Fruits")
                 .build();
-        when(productService.findProduct(1L)).thenReturn(product1);
+        Product banana = Product.builder()
+                .id(1L)
+                .name("Banana")
+                .defaultUnit(Unit.PIECE)
+                .section(fruits)
+                .build();
+        when(productService.findProduct(1L)).thenReturn(banana);
         mockMvc.perform(get("/products/{id}", 1))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaTypes.HAL_JSON))
@@ -157,23 +143,20 @@ public class TestProductController {
     @Test
     public void testAddProductSuccessful() throws Exception {
         String postBody = "{" +
-                "\"name\": \"Product one\"," +
-                "\"defaultUnit\": {" +
-                "   \"id\": 1," +
-                "   \"abbreviation\": \"l\"}," +
-                "\"section\": {" +
-                "   \"id\": 1," +
-                "   \"name\": \"Section one\"}," +
-                "\"image\": \"https:\\\\link-to-image.png\"" +
+                "\"name\": \"Milk\"," +
+                "\"defaultUnitAbbreviation\": \"l\"," +
+                "\"sectionId\": 1," +
+                "\"imageUrl\": \"https:\\\\link-to-image.png\"" +
                 "}";
         when(productService.registerNewProduct(any()))
                 .thenAnswer(p -> Product.builder()
                         .id(1L)
                         .name("Product one")
-                        .defaultUnit(liter)
+                        .defaultUnit(Unit.LITER)
                         .section(Section.builder()
                                 .id(1L)
-                                .name("Section one").build())
+                                .name("Dairy")
+                                .build())
                         .image(mock(File.class))
                         .thumbImage(mock(File.class))
                         .build());
@@ -188,11 +171,11 @@ public class TestProductController {
                         requestFields(
                                 fieldWithPath("name")
                                         .description("Name of a product"),
-                                subsectionWithPath("defaultUnit")
+                                subsectionWithPath("defaultUnitAbbreviation")
                                         .description("Default unit that is used for a product."),
-                                subsectionWithPath("section")
+                                subsectionWithPath("sectionId")
                                         .description("Section that the product is assigned to."),
-                                fieldWithPath("image")
+                                fieldWithPath("imageUrl")
                                         .description("Link to an image that represents a product best.")
                         ),
                         responseFields(
@@ -240,15 +223,18 @@ public class TestProductController {
 
     @Test
     public void testGetProductImageSuccessful() throws Exception {
-        Product product1 = Product.builder()
+        Section fruits = Section.builder()
                 .id(1L)
-                .name("Product 1")
-                .defaultUnit(liter)
-                .section(section)
-                .image(new File("product1-image"))
-                .thumbImage(new File("product1-thumbImage"))
+                .name("Fruits")
                 .build();
-        when(productService.findProduct(1L)).thenReturn(product1);
+        Product banana = Product.builder()
+                .id(1L)
+                .name("Banana")
+                .defaultUnit(Unit.PIECE)
+                .section(fruits)
+                .image(new File("path-to-image"))
+                .build();
+        when(productService.findProduct(1L)).thenReturn(banana);
         try (MockedStatic<ImagesTools> mockedImagesTools = Mockito.mockStatic(ImagesTools.class)) {
             mockedImagesTools.when(() -> ImagesTools.getImageFromLocalResources(anyString()))
                     .thenAnswer(s -> {
@@ -290,15 +276,18 @@ public class TestProductController {
 
     @Test
     public void testGetProductThumbImageSuccessful() throws Exception {
-        Product product1 = Product.builder()
+        Section fruits = Section.builder()
                 .id(1L)
-                .name("Product 1")
-                .defaultUnit(liter)
-                .section(section)
-                .image(new File("product1-image"))
-                .thumbImage(new File("product1-thumbImage"))
+                .name("Fruits")
                 .build();
-        when(productService.findProduct(1L)).thenReturn(product1);
+        Product banana = Product.builder()
+                .id(1L)
+                .name("Banana")
+                .defaultUnit(Unit.PIECE)
+                .section(fruits)
+                .thumbImage(new File("path-to-thumb-image"))
+                .build();
+        when(productService.findProduct(1L)).thenReturn(banana);
         try (MockedStatic<ImagesTools> mockedImagesTools = Mockito.mockStatic(ImagesTools.class)) {
             mockedImagesTools.when(() -> ImagesTools.getImageFromLocalResources(anyString()))
                     .thenAnswer(s -> {

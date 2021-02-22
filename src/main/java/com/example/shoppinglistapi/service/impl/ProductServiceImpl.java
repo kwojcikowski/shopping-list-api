@@ -3,10 +3,9 @@ package com.example.shoppinglistapi.service.impl;
 import com.example.shoppinglistapi.dto.product.ProductCreateDto;
 import com.example.shoppinglistapi.model.Product;
 import com.example.shoppinglistapi.model.Section;
-import com.example.shoppinglistapi.model.Unit;
+import com.example.shoppinglistapi.model.unit.Unit;
 import com.example.shoppinglistapi.repository.ProductRepository;
 import com.example.shoppinglistapi.repository.SectionRepository;
-import com.example.shoppinglistapi.repository.UnitRepository;
 import com.example.shoppinglistapi.service.ProductService;
 import com.example.shoppinglistapi.service.tools.ImagesTools;
 import lombok.NonNull;
@@ -25,7 +24,6 @@ import java.util.Date;
 public class ProductServiceImpl implements ProductService {
 
     private final @NonNull ProductRepository productRepository;
-    private final @NonNull UnitRepository unitRepository;
     private final @NonNull SectionRepository sectionRepository;
 
     @Override
@@ -56,10 +54,16 @@ public class ProductServiceImpl implements ProductService {
         if (productRepository.existsByName(createDto.name))
             throw new DataIntegrityViolationException("Unable to register product: Product with name "
                     + createDto.name + " already exists.");
-        Unit defaultUnit = unitRepository.findById(createDto.defaultUnitId)
-                .orElseThrow(() -> new EntityNotFoundException("Unable to register product: Provided unit does not exist."));
-        Section section = sectionRepository.findById(createDto.sectionId)
-                .orElseThrow(() -> new EntityNotFoundException("Unable to register product: Provided section does not exist."));
+
+        Unit defaultUnit;
+        Section section;
+        try {
+            defaultUnit = Unit.fromAbbreviation(createDto.defaultUnitAbbreviation);
+            section = sectionRepository.findById(createDto.sectionId)
+                    .orElseThrow(() -> new EntityNotFoundException("Provided section does not exist."));
+        } catch (EntityNotFoundException e) {
+            throw new EntityNotFoundException("Unable to register product: " + e.getMessage());
+        }
 
         String fileType = createDto.imageUrl.substring(createDto.imageUrl.lastIndexOf('.'));
 

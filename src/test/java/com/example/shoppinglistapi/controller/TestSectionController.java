@@ -1,20 +1,15 @@
 package com.example.shoppinglistapi.controller;
 
-import com.example.shoppinglistapi.TestModelMapperConfiguration;
 import com.example.shoppinglistapi.model.Section;
 import com.example.shoppinglistapi.repository.SectionRepository;
-import com.example.shoppinglistapi.service.assembler.SectionModelAssembler;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
@@ -32,11 +27,9 @@ import static org.springframework.restdocs.request.RequestDocumentation.paramete
 import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@RunWith(SpringRunner.class)
-@ContextConfiguration(classes = {SectionModelAssembler.class})
-@WebMvcTest(controllers = SectionController.class)
-@Import({SectionController.class, TestModelMapperConfiguration.class})
 @AutoConfigureRestDocs(outputDir = "target/generated-snippets/sections")
+@SpringBootTest
+@AutoConfigureMockMvc
 public class TestSectionController {
 
     @MockBean
@@ -100,35 +93,6 @@ public class TestSectionController {
         when(sectionRepository.findById(1L)).thenReturn(Optional.empty());
         mockMvc.perform(get("/sections/1"))
                 .andExpect(status().isNotFound());
-    }
-
-    @Test
-    public void testAddSectionSuccessful() throws Exception {
-        String postBody = "{\"name\": \"Section 1\"}";
-        when(sectionRepository.saveAndFlush(Mockito.any(Section.class))).thenAnswer(s -> {
-            Section addedSection = s.getArgument(0);
-            addedSection.setId(1L);
-            return addedSection;
-        });
-        mockMvc.perform(post("/sections")
-                .contentType(MediaTypes.HAL_JSON)
-                .content(postBody))
-                .andExpect(status().isCreated())
-                .andExpect(content().contentType(MediaTypes.HAL_JSON))
-                .andDo(document("add-section",
-                        preprocessRequest(prettyPrint()),
-                        preprocessResponse(prettyPrint()),
-                        requestFields(
-                                fieldWithPath("name").description("Name of a section")
-                        ),
-                        responseFields(
-                                fieldWithPath("id").description("The id of a section."),
-                                fieldWithPath("name").description("Name of a section."),
-                                subsectionWithPath("_links").description("Links to connected resources")
-                        ),
-                        links(
-                                linkWithRel("self").description("Link with a self reference to a section.")
-                        )));
     }
 
     @Test

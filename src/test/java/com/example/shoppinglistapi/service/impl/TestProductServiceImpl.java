@@ -2,10 +2,11 @@ package com.example.shoppinglistapi.service.impl;
 
 
 import com.example.shoppinglistapi.dto.product.ProductCreateDto;
-import com.example.shoppinglistapi.model.*;
+import com.example.shoppinglistapi.model.Product;
+import com.example.shoppinglistapi.model.Section;
+import com.example.shoppinglistapi.model.unit.Unit;
 import com.example.shoppinglistapi.repository.ProductRepository;
 import com.example.shoppinglistapi.repository.SectionRepository;
-import com.example.shoppinglistapi.repository.UnitRepository;
 import com.example.shoppinglistapi.service.ProductService;
 import com.example.shoppinglistapi.service.tools.ImagesTools;
 import org.junit.jupiter.api.Test;
@@ -24,10 +25,9 @@ public class TestProductServiceImpl {
 
     private final ProductRepository productRepository = mock(ProductRepository.class);
     private final SectionRepository sectionRepository = mock(SectionRepository.class);
-    private final UnitRepository unitRepository = mock(UnitRepository.class);
 
     private final ProductService productService =
-            new ProductServiceImpl(productRepository, unitRepository, sectionRepository);
+            new ProductServiceImpl(productRepository, sectionRepository);
 
 
     @Test
@@ -35,7 +35,7 @@ public class TestProductServiceImpl {
         Product product = Product.builder()
                 .id(1L)
                 .name("Banana")
-                .defaultUnit(mock(Unit.class))
+                .defaultUnit(Unit.PIECE)
                 .section(mock(Section.class))
                 .build();
         when(productRepository.findById(1L)).thenReturn(Optional.ofNullable(product));
@@ -85,30 +85,13 @@ public class TestProductServiceImpl {
 
     @Test
     public void testRegisterNewProduct() {
-        BaseUnit pieces = BaseUnit.builder()
-                .id(1L)
-                .name("pieces")
-                .abbreviation("pcs")
-                .build();
-        Prefix prefix = Prefix.builder()
-                .id(1L)
-                .name("none")
-                .abbreviation("")
-                .scale(1.0)
-                .build();
-        Unit unit = Unit.builder()
-                .id(1L)
-                .baseUnit(pieces)
-                .prefix(prefix)
-                .build();
-        unit.setMasterUnit(unit);
         Section section = Section.builder()
                 .id(1L)
                 .name("Fruits")
                 .build();
         ProductCreateDto createDto = ProductCreateDto.builder()
                 .name("Banana")
-                .defaultUnitId(1L)
+                .defaultUnitAbbreviation("pcs")
                 .sectionId(1L)
                 .imageUrl("https://link-to-image.jpg")
                 .build();
@@ -116,14 +99,13 @@ public class TestProductServiceImpl {
         Product expectedProduct = Product.builder()
                 .id(1L)
                 .name(createDto.name)
-                .defaultUnit(unit)
+                .defaultUnit(Unit.PIECE)
                 .section(section)
                 .image(mock(File.class))
                 .thumbImage(mock(File.class))
                 .build();
 
         when(productRepository.existsByName("Banana")).thenReturn(false);
-        when(unitRepository.findById(1L)).thenReturn(Optional.of(unit));
         when(sectionRepository.findById(1L)).thenReturn(Optional.ofNullable(section));
         when(productRepository.saveAndFlush(any(Product.class))).thenReturn(expectedProduct);
 
@@ -150,7 +132,7 @@ public class TestProductServiceImpl {
     public void testRegisterNewProductThrowExceptionOnProductNameDuplicate() {
         ProductCreateDto createDto = ProductCreateDto.builder()
                 .name("Banana")
-                .defaultUnitId(1L)
+                .defaultUnitAbbreviation("pcs")
                 .sectionId(1L)
                 .imageUrl("")
                 .build();
@@ -171,12 +153,10 @@ public class TestProductServiceImpl {
     public void testRegisterNewProductThrowExceptionOnNonExistingUnit() {
         ProductCreateDto createDto = ProductCreateDto.builder()
                 .name("Banana")
-                .defaultUnitId(1L)
+                .defaultUnitAbbreviation("non-existing-unit")
                 .sectionId(1L)
                 .imageUrl("")
                 .build();
-
-        when(unitRepository.findById(1L)).thenReturn(Optional.empty());
 
         Exception exception = assertThrows(
                 EntityNotFoundException.class,
@@ -184,19 +164,18 @@ public class TestProductServiceImpl {
                 "Expected to throw EntityNotFoundException when " +
                         "registering product with non existing unit"
         );
-        assertThat(exception.getMessage()).isEqualTo("Unable to register product: Provided unit does not exist.");
+        assertThat(exception.getMessage()).isEqualTo("Unable to register product: Unable to find unit with provided abbreviation.");
     }
 
     @Test
     public void testRegisterNewProductThrowExceptionOnNonExistingSection() {
         ProductCreateDto createDto = ProductCreateDto.builder()
                 .name("Banana")
-                .defaultUnitId(1L)
+                .defaultUnitAbbreviation("pcs")
                 .sectionId(1L)
                 .imageUrl("")
                 .build();
 
-        when(unitRepository.findById(1L)).thenReturn(Optional.of(mock(Unit.class)));
         when(sectionRepository.findById(1L)).thenReturn(Optional.empty());
 
         Exception exception = assertThrows(
