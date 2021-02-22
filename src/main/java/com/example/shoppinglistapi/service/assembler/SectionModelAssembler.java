@@ -21,11 +21,12 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @RequiredArgsConstructor
 public class SectionModelAssembler implements RepresentationModelAssembler<Section, SectionReadDto> {
 
-    private final @NonNull ModelMapper modelMapper;
-
     @Override
     public SectionReadDto toModel(Section entity) {
-        SectionReadDto sectionReadDto = modelMapper.map(entity, SectionReadDto.class);
+        SectionReadDto sectionReadDto = SectionReadDto.builder()
+                .id(entity.getId())
+                .name(entity.getName())
+                .build();
         Link selfLink = linkTo(methodOn(SectionController.class).getSectionById(entity.getId())).withSelfRel();
         sectionReadDto.add(selfLink);
         return sectionReadDto;

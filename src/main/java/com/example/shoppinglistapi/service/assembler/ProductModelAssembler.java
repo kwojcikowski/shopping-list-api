@@ -22,12 +22,18 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @RequiredArgsConstructor
 public class ProductModelAssembler implements RepresentationModelAssembler<Product, ProductReadDto> {
 
-    private final @NonNull ModelMapper modelMapper;
+    private final @NonNull UnitModelAssembler unitModelAssembler;
+    private final @NonNull SectionModelAssembler sectionModelAssembler;
 
     @SneakyThrows
     @Override
     public ProductReadDto toModel(Product entity) {
-        ProductReadDto productDto = modelMapper.map(entity, ProductReadDto.class);
+        ProductReadDto productDto = ProductReadDto.builder()
+                .id(entity.getId())
+                .name(entity.getName())
+                .defaultUnit(unitModelAssembler.toModel(entity.getDefaultUnit()))
+                .section(sectionModelAssembler.toModel(entity.getSection()))
+                .build();
 
         Link selfLink = linkTo(methodOn(ProductController.class).getProductById(entity.getId())).withSelfRel();
         Link imageLink = linkTo(methodOn(ProductController.class).getProductImage(entity.getId())).withRel("image");

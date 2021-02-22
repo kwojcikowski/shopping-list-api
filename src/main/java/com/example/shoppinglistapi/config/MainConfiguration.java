@@ -1,7 +1,5 @@
 package com.example.shoppinglistapi.config;
 
-import com.example.shoppinglistapi.repository.UnitRepository;
-import com.example.shoppinglistapi.service.tools.SmartUnits;
 import com.example.shoppinglistapi.service.tools.normalizer.Alphabet;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +11,6 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import javax.annotation.PostConstruct;
 
 @Configuration
 @EnableJpaRepositories(basePackages = {"com.example.shoppinglistapi.repository"})
@@ -21,11 +18,6 @@ import javax.annotation.PostConstruct;
 public class MainConfiguration {
 
     final @NonNull ApplicationContext applicationContext;
-
-    @PostConstruct
-    public void initializeSmartUnits() {
-        SmartUnits.unitRepository = applicationContext.getBean("unitRepository", UnitRepository.class);
-    }
 
     @Bean
     public WebMvcConfigurer corsConfigurer() {

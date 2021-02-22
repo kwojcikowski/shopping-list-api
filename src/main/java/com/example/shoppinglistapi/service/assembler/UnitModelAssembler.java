@@ -1,7 +1,7 @@
 package com.example.shoppinglistapi.service.assembler;
 
 import com.example.shoppinglistapi.controller.UnitController;
-import com.example.shoppinglistapi.model.Unit;
+import com.example.shoppinglistapi.model.unit.Unit;
 import com.example.shoppinglistapi.dto.unit.UnitReadDto;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -21,12 +21,12 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @RequiredArgsConstructor
 public class UnitModelAssembler implements RepresentationModelAssembler<Unit, UnitReadDto> {
 
-    private final @NonNull ModelMapper modelMapper;
-
     @Override
     public UnitReadDto toModel(Unit entity) {
-        UnitReadDto unitReadDto = modelMapper.map(entity, UnitReadDto.class);
-        Link selfLink = linkTo(methodOn(UnitController.class).getUnitById(entity.getId())).withSelfRel();
+        UnitReadDto unitReadDto = UnitReadDto.builder()
+                .abbreviation(entity.toString())
+                .build();
+        Link selfLink = linkTo(methodOn(UnitController.class).getUnitByAbbreviation(entity.toString())).withSelfRel();
         unitReadDto.add(selfLink);
         return unitReadDto;
     }
