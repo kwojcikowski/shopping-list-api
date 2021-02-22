@@ -73,7 +73,7 @@ public class CartItemServiceImpl implements CartItemService {
                                 "Unit with given id does not exist."));
                 cartItemToUpdate.setUnit(selectedUnit);
                 cartItemToUpdate.setQuantity(cartItem.quantity);
-                cartItemsToUpdate.add(cartItemToUpdate);
+                cartItemsToUpdate.add(SmartUnits.evaluateBestUnit(cartItemToUpdate));
             } catch (EntityNotFoundException e) {
                 throw new EntityNotFoundException("Unable to update cart item: " + e.getMessage());
             }

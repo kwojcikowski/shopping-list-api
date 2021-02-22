@@ -1,156 +1,219 @@
 package com.example.shoppinglistapi.service.impl;
 
+import com.example.shoppinglistapi.dto.cartitem.CartItemUpdateDto;
 import com.example.shoppinglistapi.model.CartItem;
 import com.example.shoppinglistapi.model.Product;
 import com.example.shoppinglistapi.model.Unit;
 import com.example.shoppinglistapi.repository.CartItemRepository;
+import com.example.shoppinglistapi.repository.ProductRepository;
+import com.example.shoppinglistapi.repository.UnitRepository;
 import com.example.shoppinglistapi.service.CartItemService;
-import com.example.shoppinglistapi.service.exception.CartItemException;
 import org.junit.jupiter.api.Test;
 
+import javax.persistence.EntityNotFoundException;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.fail;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.anyIterable;
+import static org.mockito.Mockito.*;
 
 public class TestCartItemServiceImpl {
 
+    private final CartItemRepository cartItemRepository = mock(CartItemRepository.class);
+    private final UnitRepository unitRepository = mock(UnitRepository.class);
+    private final ProductRepository productRepository = mock(ProductRepository.class);
+
+    private final CartItemService cartItemService =
+            new CartItemServiceImpl(cartItemRepository, unitRepository, productRepository);
+
+    @Test
+    public void testFindAllCartItems() {
+        CartItem cartItem = CartItem.builder()
+                .id(1L)
+                .product(mock(Product.class))
+                .unit(mock(Unit.class))
+                .quantity(BigDecimal.ONE)
+                .build();
+        CartItem cartItem1 = CartItem.builder()
+                .id(2L)
+                .product(mock(Product.class))
+                .unit(mock(Unit.class))
+                .quantity(BigDecimal.TEN)
+                .build();
+        List<CartItem> expectedCartItems = List.of(cartItem, cartItem1);
+        when(cartItemRepository.findAll()).thenReturn(expectedCartItems);
+
+        List<CartItem> actualCartItems = assertDoesNotThrow(
+                cartItemService::getAllCartItems,
+                "No exception should be thrown on fetching all cart items."
+        );
+
+        assertThat(actualCartItems).isEqualTo(expectedCartItems);
+    }
+
+    @Test
+    public void testFindCartItem() {
+        CartItem expectedCartItem = CartItem.builder()
+                .id(1L)
+                .product(mock(Product.class))
+                .unit(mock(Unit.class))
+                .quantity(BigDecimal.ONE)
+                .build();
+        when(cartItemRepository.findById(1L)).thenReturn(Optional.ofNullable(expectedCartItem));
+        CartItem actualCartItem = assertDoesNotThrow(
+                () -> cartItemService.findCartItem(1L),
+                "No exception should be thrown on fetching existing cart item."
+        );
+        assertThat(actualCartItem).isEqualTo(expectedCartItem);
+    }
+
     @Test
     public void testFindCartItemByIdThrowExceptionOnNonExistingId() {
-        CartItemRepository cartItemRepository = mock(CartItemRepository.class);
+
+        when(cartItemRepository.findById(1L)).thenReturn(Optional.empty());
+
+        Exception thrownException = assertThrows(
+                EntityNotFoundException.class,
+                () -> cartItemService.findCartItem(1L),
+                "EntityNotFoundException should be thrown on fetching non existing cart item."
+        );
+
+        assertThat(thrownException.getMessage()).isEqualTo("Unable to fetch cart item: " +
+                "Cart item with given id does not exist.");
+    }
+
+    @Test
+    public void testUpdateCartItems() {
+        Product mockProduct = mock(Product.class);
+        Unit mockUnit = mock(Unit.class);
+        CartItem cartItem = CartItem.builder()
+                .id(1L)
+                .product(mockProduct)
+                .unit(mockUnit)
+                .quantity(BigDecimal.ONE)
+                .build();
+        CartItem cartItem1 = CartItem.builder()
+                .id(2L)
+                .product(mockProduct)
+                .unit(mockUnit)
+                .quantity(BigDecimal.TEN)
+                .build();
+
+        CartItemUpdateDto cartItemUpdateDto = CartItemUpdateDto.builder()
+                .id(1L)
+                .unitId(1L)
+                .quantity(new BigDecimal("30"))
+                .build();
+        CartItemUpdateDto cartItemUpdateDto1 = CartItemUpdateDto.builder()
+                .id(2L)
+                .unitId(1L)
+                .quantity(new BigDecimal("5"))
+                .build();
+
+        when(cartItemRepository.findById(1L)).thenReturn(Optional.ofNullable(cartItem));
+        when(cartItemRepository.findById(2L)).thenReturn(Optional.ofNullable(cartItem1));
+        when(unitRepository.findById(1L)).thenReturn(Optional.ofNullable(mockUnit));
+        when(cartItemRepository.saveAll(anyIterable())).thenAnswer(p -> p.getArgument(0));
+
+        CartItem expectedCartItem = CartItem.builder()
+                .id(1L)
+                .product(mockProduct)
+                .unit(mockUnit)
+                .quantity(new BigDecimal("30"))
+                .build();
+        CartItem expectedCartItem1 = CartItem.builder()
+                .id(2L)
+                .product(mockProduct)
+                .unit(mockUnit)
+                .quantity(new BigDecimal("5"))
+                .build();
+        List<CartItem> expectedCartItems = List.of(expectedCartItem, expectedCartItem1);
+
+        List<CartItem> actualCartItems = assertDoesNotThrow(
+                () -> cartItemService.updateCartItems(List.of(cartItemUpdateDto, cartItemUpdateDto1)),
+                "No exception should be thrown on correct cart items update."
+        );
+
+        assertThat(actualCartItems).isEqualTo(expectedCartItems);
+    }
+
+    @Test
+    public void testUpdateCartItemsThrowExceptionOnNonExistingCartItem() {
+        CartItemUpdateDto cartItemUpdateDto = CartItemUpdateDto.builder()
+                .id(1L)
+                .unitId(1L)
+                .quantity(new BigDecimal("30"))
+                .build();
+        CartItemUpdateDto cartItemUpdateDto1 = CartItemUpdateDto.builder()
+                .id(2L)
+                .unitId(1L)
+                .quantity(new BigDecimal("5"))
+                .build();
+
+        when(cartItemRepository.findById(1L)).thenReturn(Optional.empty());
+
+        Exception expectedException = assertThrows(
+                EntityNotFoundException.class,
+                () -> cartItemService.updateCartItems(List.of(cartItemUpdateDto, cartItemUpdateDto1)),
+                "EntityNotFoundException should be thrown on updating non existing cart item."
+        );
+
+        assertThat(expectedException.getMessage()).isEqualTo("Unable to update cart item: " +
+                "Unable to fetch cart item: Cart item with given id does not exist.");
+    }
+
+    @Test
+    public void testUpdateCartItemsThrowExceptionOnNonExistingUnit() {
+        CartItemUpdateDto cartItemUpdateDto = CartItemUpdateDto.builder()
+                .id(1L)
+                .unitId(1L)
+                .quantity(new BigDecimal("30"))
+                .build();
+        CartItemUpdateDto cartItemUpdateDto1 = CartItemUpdateDto.builder()
+                .id(2L)
+                .unitId(1L)
+                .quantity(new BigDecimal("5"))
+                .build();
+
+        when(cartItemRepository.findById(1L)).thenReturn(Optional.ofNullable(mock(CartItem.class)));
+        when(unitRepository.findById(1L)).thenReturn(Optional.empty());
+
+        Exception expectedException = assertThrows(
+                EntityNotFoundException.class,
+                () -> cartItemService.updateCartItems(List.of(cartItemUpdateDto, cartItemUpdateDto1)),
+                "EntityNotFoundException should be thrown on non existing unit while updating cart item."
+        );
+
+        assertThat(expectedException.getMessage()).isEqualTo("Unable to update cart item: " +
+                "Unable to create cart item: Unit with given id does not exist.");
+    }
+
+    @Test
+    public void testDeleteCartItem() {
+        when(cartItemRepository.existsById(1L)).thenReturn(true);
+        doNothing().when(cartItemRepository).deleteById(1L);
+
+        assertDoesNotThrow(
+                () -> cartItemService.deleteCartItemById(1L),
+                "No exception should be thrown on correct cart item delete."
+        );
+    }
+
+    @Test
+    public void testDeleteCartItemByIdThrowExceptionOnNonExistingCartItem() {
         when(cartItemRepository.existsById(1L)).thenReturn(false);
-        CartItemService service = new CartItemServiceImpl(cartItemRepository);
 
-        try{
-            service.findCartItem(1L);
-            fail("Exception should had been thrown");
-        }catch (CartItemException e){
-            assertThat(e.getMessage()).isEqualTo("Unable to fetch cart item: Cart item with id 1 does not exist.");
-        }
-    }
+        Exception expectedException = assertThrows(
+                EntityNotFoundException.class,
+                () -> cartItemService.deleteCartItemById(1L),
+                "EntityNotFoundException should be thrown on deleting non existing cart item."
+        );
 
-    @Test
-    public void testUpdateCartItemsNoExceptionOnCorrectCartItems(){
-        //Given
-        CartItemRepository cartItemRepository = mock(CartItemRepository.class);
-        Product mockProduct = mock(Product.class);
-        Unit mockUnit = mock(Unit.class);
-        BigDecimal mockQuantity = mock(BigDecimal.class);
-        CartItem correctCartItem = new CartItem(1L, mockProduct, mockUnit, mockQuantity);
-        CartItem correctCartItem1 = new CartItem(2L, mockProduct, mockUnit, mockQuantity);
-        CartItem correctCartItem2 = new CartItem(3L, mockProduct, mockUnit, mockQuantity);
-        List<CartItem> testedCartItems = List.of(correctCartItem, correctCartItem1, correctCartItem2);
-        when(cartItemRepository.existsById(1L)).thenReturn(true);
-        when(cartItemRepository.existsById(2L)).thenReturn(true);
-        when(cartItemRepository.existsById(3L)).thenReturn(true);
-        when(cartItemRepository.saveAndFlush(correctCartItem)).thenReturn(correctCartItem);
-        when(cartItemRepository.saveAndFlush(correctCartItem1)).thenReturn(correctCartItem1);
-        when(cartItemRepository.saveAndFlush(correctCartItem2)).thenReturn(correctCartItem2);
-        CartItemService service = new CartItemServiceImpl(cartItemRepository);
-
-        //When
-        try {
-            List<CartItem> items = service.updateCartItems(testedCartItems);
-
-        //Then
-            assertThat(items).isEqualTo(testedCartItems);
-        } catch (CartItemException e) {
-            fail("Exception should not had been thrown.");
-        }
-    }
-
-    @Test
-    public void testUpdateCartItemsThrowExceptionOnNullCartItemId(){
-        //Given
-        CartItemRepository cartItemRepository = mock(CartItemRepository.class);
-        Product mockProduct = mock(Product.class);
-        Unit mockUnit = mock(Unit.class);
-        BigDecimal mockQuantity = mock(BigDecimal.class);
-        CartItem correctCartItem = new CartItem(1L, mockProduct, mockUnit, mockQuantity);
-        CartItem incorrectCartItem = new CartItem(null, mockProduct, mockUnit, mockQuantity);
-        CartItem correctCartItem1 = new CartItem(2L, mockProduct, mockUnit, mockQuantity);
-        List<CartItem> testedCartItems = List.of(correctCartItem, incorrectCartItem, correctCartItem1);
-        when(cartItemRepository.existsById(1L)).thenReturn(true);
-        when(cartItemRepository.existsById(2L)).thenReturn(true);
-        when(cartItemRepository.saveAndFlush(correctCartItem)).thenReturn(correctCartItem);
-        when(cartItemRepository.saveAndFlush(correctCartItem1)).thenReturn(correctCartItem1);
-        CartItemService service = new CartItemServiceImpl(cartItemRepository);
-
-        //When
-        try {
-            service.updateCartItems(testedCartItems);
-
-        //Then
-            fail("Exception should had been thrown.");
-        } catch (CartItemException e) {
-            assertThat(e.getMessage()).isEqualTo("Unable to update cart item: No ID provided.");
-        }
-    }
-
-    @Test
-    public void testUpdateCartItemsThrowExceptionOnNonExistingCartItem(){
-        //Given
-        CartItemRepository cartItemRepository = mock(CartItemRepository.class);
-        Product mockProduct = mock(Product.class);
-        Unit mockUnit = mock(Unit.class);
-        BigDecimal mockQuantity = mock(BigDecimal.class);
-        CartItem correctCartItem = new CartItem(1L, mockProduct, mockUnit, mockQuantity);
-        CartItem correctCartItem1 = new CartItem(2L, mockProduct, mockUnit, mockQuantity);
-        CartItem nonExistingCartItem = new CartItem(3L, mockProduct, mockUnit, mockQuantity);
-        List<CartItem> testedCartItems = List.of(correctCartItem, correctCartItem1, nonExistingCartItem);
-        when(cartItemRepository.existsById(1L)).thenReturn(true);
-        when(cartItemRepository.existsById(2L)).thenReturn(true);
-        when(cartItemRepository.existsById(3L)).thenReturn(false);
-        when(cartItemRepository.saveAndFlush(correctCartItem)).thenReturn(correctCartItem);
-        when(cartItemRepository.saveAndFlush(correctCartItem1)).thenReturn(correctCartItem1);
-        when(cartItemRepository.saveAndFlush(nonExistingCartItem)).thenReturn(nonExistingCartItem);
-        CartItemService service = new CartItemServiceImpl(cartItemRepository);
-
-        //When
-        try {
-            service.updateCartItems(testedCartItems);
-
-        //Then
-            fail("Exception should had been thrown.");
-        } catch (CartItemException e) {
-            assertThat(e.getMessage()).isEqualTo("Unable to update cart item: Cart item with id 3 does not exist.");
-        }
-    }
-
-    @Test
-    public void testDeleteCartItemByIdNoExceptionOnCorrectCartItem() {
-        //Given
-        CartItemRepository cartItemRepository = mock(CartItemRepository.class);
-        when(cartItemRepository.existsById(1L)).thenReturn(true);
-        CartItemService service = new CartItemServiceImpl(cartItemRepository);
-
-        //When
-        try {
-            service.deleteCartItemById(1L);
-
-        //Then
-        } catch (CartItemException e) {
-            fail("Exception should not had been thrown.");
-        }
-    }
-
-    @Test
-    public void testDeleteCartItemByIdThrowExceptionOnNonExistingCartItem(){
-        //Given
-        CartItemRepository cartItemRepository = mock(CartItemRepository.class);
-        when(cartItemRepository.existsById(1L)).thenReturn(false);
-        CartItemService service = new CartItemServiceImpl(cartItemRepository);
-
-        //When
-        try {
-            service.deleteCartItemById(1L);
-            fail("Exception should had been thrown.");
-            //Then
-        } catch (CartItemException e) {
-            assertThat(e.getMessage()).isEqualTo("Unable to delete cart item: Cart item with id 1 does not exist.");
-        }
+        assertThat(expectedException.getMessage()).isEqualTo("Unable to delete cart item: " +
+                "Cart item with given id does not exist.");
     }
 }
