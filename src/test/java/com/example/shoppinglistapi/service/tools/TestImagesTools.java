@@ -98,7 +98,7 @@ public class TestImagesTools {
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             ImageIO.write(initialImage, fileType, bos);
 
-            ImageReadDto resultImage = ImagesTools.getImageFromLocalResources(ImagesTools.NO_IMAGE_FILENAME);
+            ImageReadDto resultImage = ImagesTools.getImageFromLocalResources(srcPath);
             assertThat(resultImage.getImage()).isEqualTo(bos.toByteArray());
         } catch (IOException e) {
             fail("Exception should not had been thrown.");

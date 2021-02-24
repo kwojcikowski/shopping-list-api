@@ -39,9 +39,7 @@ public class ImagesTools {
     public static File saveImageFromURL(String url, String destinationPath) throws IOException {
         try {
             URL imageUrl = new URL(url);
-            System.out.println(resourceDir);
             String fullPath = Path.of(resourceDir, destinationPath).toAbsolutePath().toString();
-            System.out.println(fullPath);
             ReadableByteChannel readableByteChannel = Channels.newChannel(imageUrl.openStream());
             FileOutputStream fileOutputStream = new FileOutputStream(fullPath);
             FileChannel fileChannel = fileOutputStream.getChannel();
@@ -76,8 +74,7 @@ public class ImagesTools {
 
 
     public static ImageReadDto getImageFromLocalResources(String fileName) throws IOException {
-        Path imagePath = FileSystems.getDefault().getPath("src","main", "resources", "img", fileName);
-        File f = new File(imagePath.toString());
+        File f = new File(fileName);
         String fileType;
         BufferedImage image;
         try {
@@ -86,7 +83,7 @@ public class ImagesTools {
             //If throws exception then non readable file given.
             image = ImageIO.read(f);
         }catch (IOException | ArrayIndexOutOfBoundsException e){
-            return getImageFromLocalResources(NO_IMAGE_FILENAME);
+            return getImageFromLocalResources(Path.of(resourceDir ,NO_IMAGE_FILENAME).toAbsolutePath().toString());
         }
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ImageIO.write(image, fileType, bos);
