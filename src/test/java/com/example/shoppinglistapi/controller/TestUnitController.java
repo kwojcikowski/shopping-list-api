@@ -37,6 +37,7 @@ public class TestUnitController {
                         preprocessResponse(prettyPrint()),
                         responseFields(
                                 fieldWithPath("_embedded.units[].abbreviation").description("The common abbreviation representing unit."),
+                                fieldWithPath("_embedded.units[].incrementalStep").description("Step used to increment quantity of a unit."),
                                 subsectionWithPath("_embedded.units[]._links").description("Links to resources.")
                         )
                 ));
@@ -54,6 +55,7 @@ public class TestUnitController {
                         ),
                         responseFields(
                                 fieldWithPath("abbreviation").description("The common abbreviation representing unit."),
+                                fieldWithPath("incrementalStep").description("Step used to increment quantity of a unit."),
                                 subsectionWithPath("_links").description("Links to resources.")
                         )));
     }

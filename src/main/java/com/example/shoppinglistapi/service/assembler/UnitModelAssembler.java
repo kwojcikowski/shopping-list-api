@@ -25,6 +25,7 @@ public class UnitModelAssembler implements RepresentationModelAssembler<Unit, Un
     public UnitReadDto toModel(Unit entity) {
         UnitReadDto unitReadDto = UnitReadDto.builder()
                 .abbreviation(entity.toString())
+                .incrementalStep(entity.getIncrementalStep())
                 .build();
         Link selfLink = linkTo(methodOn(UnitController.class).getUnitByAbbreviation(entity.toString())).withSelfRel();
         unitReadDto.add(selfLink);

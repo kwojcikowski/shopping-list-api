@@ -11,28 +11,31 @@ import java.util.stream.Collectors;
 @Getter
 public enum Unit {
 
-    PIECE(BaseUnit.PIECE, Prefix.NONE),
+    PIECE(BaseUnit.PIECE, Prefix.NONE, 1),
 
-    GRAM(BaseUnit.GRAM, Prefix.NONE),
-    KILOGRAM(BaseUnit.GRAM, Prefix.KILO, Unit.GRAM),
+    GRAM(BaseUnit.GRAM, Prefix.NONE, 10),
+    KILOGRAM(BaseUnit.GRAM, Prefix.KILO, Unit.GRAM, 1),
 
-    LITER(BaseUnit.LITER, Prefix.NONE),
-    MILLILITER(BaseUnit.LITER, Prefix.MILLI, Unit.LITER);
+    LITER(BaseUnit.LITER, Prefix.NONE, 1),
+    MILLILITER(BaseUnit.LITER, Prefix.MILLI, Unit.LITER, 10);
 
 
     BaseUnit baseUnit;
     Prefix prefix;
     Unit masterUnit;
+    Integer incrementalStep;
 
-    Unit(BaseUnit baseUnit, Prefix prefix, Unit masterUnit) {
+    Unit(BaseUnit baseUnit, Prefix prefix, Unit masterUnit, Integer incrementalStep) {
         this.baseUnit = baseUnit;
         this.prefix = prefix;
         this.masterUnit = masterUnit;
+        this.incrementalStep = incrementalStep;
     }
 
-    Unit(BaseUnit baseUnit, Prefix prefix) {
+    Unit(BaseUnit baseUnit, Prefix prefix, Integer incrementalStep) {
         this.baseUnit = baseUnit;
         this.prefix = prefix;
+        this.incrementalStep = incrementalStep;
     }
 
     public static Unit fromAbbreviation(String abbreviation) {

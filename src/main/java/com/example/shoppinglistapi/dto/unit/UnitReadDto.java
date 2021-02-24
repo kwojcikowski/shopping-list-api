@@ -15,6 +15,7 @@ public class UnitReadDto extends RepresentationModel<UnitReadDto> {
     @NonNull
     public String abbreviation;
 
+    public Integer incrementalStep;
     /*
     Links
     self
