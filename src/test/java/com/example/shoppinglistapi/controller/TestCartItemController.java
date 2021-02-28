@@ -17,7 +17,9 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import javax.persistence.EntityNotFoundException;
 import java.math.BigDecimal;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -28,8 +30,7 @@ import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.docu
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
-import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
-import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
+import static org.springframework.restdocs.request.RequestDocumentation.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -78,7 +79,10 @@ public class TestCartItemController {
                 .unit(Unit.MILLILITER)
                 .quantity(new BigDecimal("250"))
                 .build();
-        when(cartItemService.getAllCartItems()).thenReturn(List.of(bananaCartItem, milkCartItem));
+        when(cartItemService.getAllCartItems()).thenReturn(Map.of(
+                fruits, List.of(bananaCartItem),
+                dairy, List.of(milkCartItem)
+        ));
         mockMvc.perform(get("/cartItems"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaTypes.HAL_JSON))
@@ -86,16 +90,63 @@ public class TestCartItemController {
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
                         responseFields(
-                                fieldWithPath("_embedded.cartItems[].id")
-                                        .description("A unique identifier for this cart item."),
-                                subsectionWithPath("_embedded.cartItems[].product")
-                                        .description("Product that is added to the cart."),
-                                subsectionWithPath("_embedded.cartItems[].unit")
-                                        .description("Unit of a product"),
-                                fieldWithPath("_embedded.cartItems[].quantity")
-                                        .description("Quantity of a unit."),
-                                subsectionWithPath("_embedded.cartItems[]._links")
-                                        .description("Links to resources.")
+                                subsectionWithPath("_embedded.entries")
+                                        .description("Map with section names as keys and list of related cart items as a value.")
+                        )));
+    }
+
+    @Test
+    public void testGetSortedCartItems() throws Exception {
+        Section dairy = Section.builder()
+                .id(1L)
+                .name("Dairy")
+                .build();
+        Section fruits = Section.builder()
+                .id(2L)
+                .name("Fruits")
+                .build();
+        Product milk = Product.builder()
+                .id(1L)
+                .name("Milk")
+                .defaultUnit(Unit.LITER)
+                .section(dairy)
+                .build();
+        Product banana = Product.builder()
+                .id(2L)
+                .name("Banana")
+                .defaultUnit(Unit.PIECE)
+                .section(fruits)
+                .build();
+        CartItem bananaCartItem = CartItem.builder()
+                .id(1L)
+                .product(banana)
+                .unit(Unit.PIECE)
+                .quantity(new BigDecimal("4"))
+                .build();
+        CartItem milkCartItem = CartItem.builder()
+                .id(2L)
+                .product(milk)
+                .unit(Unit.MILLILITER)
+                .quantity(new BigDecimal("250"))
+                .build();
+        when(cartItemService.getSortedCartItems(1L)).thenReturn(
+                new LinkedHashMap<>(Map.of(
+                        fruits, List.of(bananaCartItem),
+                        dairy, List.of(milkCartItem)
+                )));
+        mockMvc.perform(get("/cartItems/sorted?sortingStore={storeId}", 1))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaTypes.HAL_JSON))
+                .andDo(document("get-all-cart-items",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        requestParameters(
+                                parameterWithName("sortingStore")
+                                        .description("Id of a store that is going to be used for sorting cart items.")
+                        ),
+                        responseFields(
+                                subsectionWithPath("_embedded.entries")
+                                        .description("Map with section names as keys and list of related cart items as a value.")
                         )));
     }
 

@@ -9,7 +9,6 @@ import com.example.shoppinglistapi.service.assembler.CartItemModelAssembler;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
-import org.springframework.hateoas.CollectionModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,8 +27,17 @@ public class CartItemController {
     private final @NonNull CartItemService cartItemService;
 
     @GetMapping
-    public ResponseEntity<CollectionModel<CartItemReadDto>> getAllCartItems() {
-        return ResponseEntity.ok(cartItemModelAssembler.toCollectionModel(cartItemService.getAllCartItems()));
+    public ResponseEntity<?> getAllCartItems() {
+        return ResponseEntity.ok(cartItemModelAssembler.toMapModel(cartItemService.getAllCartItems()));
+    }
+
+    @GetMapping("/sorted")
+    public ResponseEntity<?> getSortedCartItems(@RequestParam("sortingStore") Long storeId) {
+        try {
+            return ResponseEntity.ok(cartItemModelAssembler.toMapModel(cartItemService.getSortedCartItems(storeId)));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @GetMapping(path = "/{id}")

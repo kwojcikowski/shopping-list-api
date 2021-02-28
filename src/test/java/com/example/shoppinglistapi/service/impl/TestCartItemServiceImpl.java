@@ -1,17 +1,18 @@
 package com.example.shoppinglistapi.service.impl;
 
 import com.example.shoppinglistapi.dto.cartitem.CartItemUpdateDto;
-import com.example.shoppinglistapi.model.CartItem;
-import com.example.shoppinglistapi.model.Product;
+import com.example.shoppinglistapi.model.*;
 import com.example.shoppinglistapi.model.unit.Unit;
 import com.example.shoppinglistapi.repository.CartItemRepository;
 import com.example.shoppinglistapi.service.CartItemService;
 import com.example.shoppinglistapi.service.ProductService;
+import com.example.shoppinglistapi.service.StoreService;
 import org.junit.jupiter.api.Test;
 
 import javax.persistence.EntityNotFoundException;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -24,33 +25,139 @@ public class TestCartItemServiceImpl {
 
     private final CartItemRepository cartItemRepository = mock(CartItemRepository.class);
     private final ProductService productService = mock(ProductService.class);
+    private final StoreService storeService = mock(StoreService.class);
 
     private final CartItemService cartItemService =
-            new CartItemServiceImpl(cartItemRepository, productService);
+            new CartItemServiceImpl(cartItemRepository, productService, storeService);
 
     @Test
-    public void testFindAllCartItems() {
+    public void testGetAllCartItems() {
+        Section fruits = Section.builder()
+                .id(1L)
+                .name("Fruits")
+                .build();
+        Product banana = Product.builder()
+                .id(1L)
+                .name("Banana")
+                .defaultUnit(Unit.PIECE)
+                .section(fruits)
+                .build();
+        Product apple = Product.builder()
+                .id(2L)
+                .name("Apple")
+                .defaultUnit(Unit.PIECE)
+                .section(fruits)
+                .build();
         CartItem cartItem = CartItem.builder()
                 .id(1L)
-                .product(mock(Product.class))
-                .unit(mock(Unit.class))
+                .product(banana)
+                .unit(Unit.PIECE)
                 .quantity(BigDecimal.ONE)
                 .build();
         CartItem cartItem1 = CartItem.builder()
                 .id(2L)
-                .product(mock(Product.class))
-                .unit(mock(Unit.class))
+                .product(apple)
+                .unit(Unit.PIECE)
                 .quantity(BigDecimal.TEN)
                 .build();
-        List<CartItem> expectedCartItems = List.of(cartItem, cartItem1);
-        when(cartItemRepository.findAll()).thenReturn(expectedCartItems);
 
-        List<CartItem> actualCartItems = assertDoesNotThrow(
+        List<CartItem> cartItems = List.of(cartItem, cartItem1);
+        when(cartItemRepository.findAll()).thenReturn(cartItems);
+
+        Map<Section, List<CartItem>> expectedCartItems = Map.of(
+                fruits, cartItems
+        );
+
+        Map<Section, List<CartItem>> actualCartItems = assertDoesNotThrow(
                 cartItemService::getAllCartItems,
                 "No exception should be thrown on fetching all cart items."
         );
 
         assertThat(actualCartItems).isEqualTo(expectedCartItems);
+    }
+
+    @Test
+    public void testGetSortedCartItems() {
+        Store groceryStore = Store.builder()
+                .id(1L)
+                .name("Grocery store")
+                .urlFriendlyName("grocery-store")
+                .build();
+        Section fruits = Section.builder()
+                .id(1L)
+                .name("Fruits")
+                .build();
+        Section vegetables = Section.builder()
+                .id(2L)
+                .name("Vegetables")
+                .build();
+        StoreSection groceryFruits = StoreSection.builder()
+                .id(1L)
+                .store(groceryStore)
+                .section(fruits)
+                .position(1)
+                .build();
+        StoreSection groceryVegetables = StoreSection.builder()
+                .id(2L)
+                .store(groceryStore)
+                .section(vegetables)
+                .position(2)
+                .build();
+        Product banana = Product.builder()
+                .id(1L)
+                .name("Banana")
+                .defaultUnit(Unit.PIECE)
+                .section(fruits)
+                .build();
+        Product carrot = Product.builder()
+                .id(2L)
+                .name("Carrot")
+                .defaultUnit(Unit.PIECE)
+                .section(vegetables)
+                .build();
+        CartItem carrotCartItem = CartItem.builder()
+                .id(1L)
+                .product(carrot)
+                .unit(Unit.PIECE)
+                .quantity(BigDecimal.TEN)
+                .build();
+        CartItem bananaCartItem = CartItem.builder()
+                .id(2L)
+                .product(banana)
+                .unit(Unit.PIECE)
+                .quantity(BigDecimal.ONE)
+                .build();
+
+        List<CartItem> cartItems = List.of(carrotCartItem, bananaCartItem);
+        List<StoreSection> storeSections = List.of(groceryFruits, groceryVegetables);
+
+        when(storeService.getStoreSectionsByStoreId(1L)).thenReturn(storeSections);
+        when(cartItemRepository.findAll()).thenReturn(cartItems);
+
+        Map<Section, List<CartItem>> expectedSortedCartItems = Map.of(
+                fruits, List.of(bananaCartItem),
+                vegetables, List.of(carrotCartItem)
+        );
+
+        Map<Section, List<CartItem>> actualSortedCartItems = assertDoesNotThrow(
+                () -> cartItemService.getSortedCartItems(1L),
+                "No exception should be thrown on fetching sorted cart items."
+        );
+
+        assertThat(actualSortedCartItems).isEqualTo(expectedSortedCartItems);
+    }
+
+    @Test
+    public void testGetSortedCartItemsThrowExceptionOnNonExistingStore() {
+        when(storeService.getStoreSectionsByStoreId(1L)).thenThrow(new EntityNotFoundException(""));
+
+        Exception thrownException = assertThrows(
+                EntityNotFoundException.class,
+                () -> cartItemService.getSortedCartItems(1L),
+                "EntityNotFoundException should be thrown on fetching sorted cart items with non existing store."
+        );
+
+        assertThat(thrownException.getMessage()).isEqualTo("Unable to get sorted cart items: ");
     }
 
     @Test

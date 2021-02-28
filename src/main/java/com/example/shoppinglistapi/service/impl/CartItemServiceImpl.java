@@ -4,10 +4,13 @@ import com.example.shoppinglistapi.dto.cartitem.CartItemCreateDto;
 import com.example.shoppinglistapi.dto.cartitem.CartItemUpdateDto;
 import com.example.shoppinglistapi.model.CartItem;
 import com.example.shoppinglistapi.model.Product;
+import com.example.shoppinglistapi.model.Section;
+import com.example.shoppinglistapi.model.StoreSection;
 import com.example.shoppinglistapi.model.unit.Unit;
 import com.example.shoppinglistapi.repository.CartItemRepository;
 import com.example.shoppinglistapi.service.CartItemService;
 import com.example.shoppinglistapi.service.ProductService;
+import com.example.shoppinglistapi.service.StoreService;
 import com.example.shoppinglistapi.service.tools.SmartUnits;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +18,11 @@ import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+
+import static java.util.stream.Collectors.groupingBy;
 
 @Service
 @RequiredArgsConstructor
@@ -23,10 +30,33 @@ public class CartItemServiceImpl implements CartItemService {
 
     private final @NonNull CartItemRepository cartItemRepository;
     private final @NonNull ProductService productService;
+    private final @NonNull StoreService storeService;
 
     @Override
-    public List<CartItem> getAllCartItems() {
-        return cartItemRepository.findAll();
+    public Map<Section, List<CartItem>> getAllCartItems() {
+        return cartItemRepository.findAll().stream()
+                .collect(groupingBy(cartItem -> cartItem.getProduct().getSection()));
+    }
+
+    @Override
+    public LinkedHashMap<Section, List<CartItem>> getSortedCartItems(Long storeId) {
+        List<StoreSection> storeSections;
+        try {
+            storeSections = storeService.getStoreSectionsByStoreId(storeId);
+        } catch (EntityNotFoundException e) {
+            throw new EntityNotFoundException("Unable to get sorted cart items: " + e.getMessage());
+        }
+
+        Map<Section, List<CartItem>> cartItems = getAllCartItems();
+        LinkedHashMap<Section, List<CartItem>> sortedCartItems = new LinkedHashMap<>();
+
+        storeSections.forEach(
+                storeSection -> {
+                    if (cartItems.containsKey(storeSection.getSection()))
+                        sortedCartItems.put(storeSection.getSection(), cartItems.get(storeSection.getSection()));
+                }
+        );
+        return sortedCartItems;
     }
 
     @Override
@@ -41,10 +71,10 @@ public class CartItemServiceImpl implements CartItemService {
 
         Unit selectedUnit;
         Product selectedProduct;
-        try{
+        try {
             selectedUnit = Unit.fromAbbreviation(createDto.unitAbbreviation);
             selectedProduct = productService.findProduct(createDto.productId);
-        }catch (EntityNotFoundException e) {
+        } catch (EntityNotFoundException e) {
             throw new EntityNotFoundException("Unable to create cart item: " + e.getMessage());
         }
 
@@ -82,8 +112,8 @@ public class CartItemServiceImpl implements CartItemService {
                         .orElse(null);
                 cartItemsToUpdate.add(
                         cartItemSameBaseUnit != null
-                        ? SmartUnits.evaluateBestUnit(cartItemSameBaseUnit, cartItemToUpdate)
-                        : SmartUnits.evaluateBestUnit(cartItemToUpdate));
+                                ? SmartUnits.evaluateBestUnit(cartItemSameBaseUnit, cartItemToUpdate)
+                                : SmartUnits.evaluateBestUnit(cartItemToUpdate));
             } catch (EntityNotFoundException e) {
                 throw new EntityNotFoundException("Unable to update cart item: " + e.getMessage());
             }
