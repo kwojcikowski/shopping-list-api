@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import javax.persistence.EntityNotFoundException;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -40,11 +41,15 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public void deleteProductById(Long id) {
-        if (productRepository.existsById(id))
-            productRepository.deleteById(id);
-        else
+        try {
+            Product product = findProduct(id);
+            Files.delete(product.getImage().toPath());
+            Files.delete(product.getThumbImage().toPath());
+        } catch (EntityNotFoundException e) {
             throw new EntityNotFoundException("Unable to delete product: " +
-                    "Product with given id does not exist.");
+                    e.getMessage());
+        } catch (IOException ignored) {
+        }
     }
 
     @Override

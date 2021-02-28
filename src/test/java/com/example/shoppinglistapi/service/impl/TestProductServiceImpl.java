@@ -64,7 +64,15 @@ public class TestProductServiceImpl {
 
     @Test
     public void testDeleteProductById() {
-        when(productRepository.existsById(1L)).thenReturn(true);
+        Product product = Product.builder()
+                .id(1L)
+                .name("Banana")
+                .defaultUnit(Unit.PIECE)
+                .section(mock(Section.class))
+                .image(new File(""))
+                .thumbImage(new File(""))
+                .build();
+        when(productRepository.findById(1L)).thenReturn(Optional.ofNullable(product));
         doNothing().when(productRepository).deleteById(1L);
         assertDoesNotThrow(
                 () -> productService.deleteProductById(1L),
@@ -74,13 +82,14 @@ public class TestProductServiceImpl {
 
     @Test
     public void testDeleteProductByIdThrowExceptionOnNonExistingProductId() {
-        when(productRepository.existsById(1L)).thenReturn(false);
+        when(productRepository.findById(1L)).thenReturn(Optional.empty());
         Exception exception = assertThrows(
                 EntityNotFoundException.class,
                 () -> productService.deleteProductById(1L),
                 "Expected to throw EntityNotFoundException on attempting to delete non existing product."
         );
-        assertThat(exception.getMessage()).isEqualTo("Unable to delete product: Product with given id does not exist.");
+        assertThat(exception.getMessage()).isEqualTo("Unable to delete product: " +
+                "Unable to fetch product: Product with given id does not exist.");
     }
 
     @Test
