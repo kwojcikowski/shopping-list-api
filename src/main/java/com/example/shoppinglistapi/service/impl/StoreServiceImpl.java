@@ -73,7 +73,12 @@ public class StoreServiceImpl implements StoreService {
 
     @Override
     public List<StoreSection> getStoreSectionsByStoreId(Long storeId) {
-        return storeSectionRepository.findAllByStore_Id(storeId);
+        try {
+            Store store = getStoreById(storeId);
+            return storeSectionRepository.findAllByStore_IdOrderByPosition(store.getId());
+        } catch (EntityNotFoundException e) {
+            throw new EntityNotFoundException("Unable to fetch store sections: " + e.getMessage());
+        }
     }
 
     @Override
@@ -82,11 +87,11 @@ public class StoreServiceImpl implements StoreService {
             throws EntityNotFoundException, IllegalAccessException {
 
         List<Integer> positions = createDtos.stream().map(dto -> dto.position).collect(Collectors.toList());
-        if(createDtos.stream().anyMatch(updateDto -> Collections.frequency(positions, updateDto.position) > 1))
+        if (createDtos.stream().anyMatch(updateDto -> Collections.frequency(positions, updateDto.position) > 1))
             throw new DataIntegrityViolationException("Unable to update store sections: " +
                     "Each section of a store must have a unique position.");
 
-        if(createDtos.stream().anyMatch(updateDto -> !updateDto.storeId.equals(storeId)))
+        if (createDtos.stream().anyMatch(updateDto -> !updateDto.storeId.equals(storeId)))
             throw new IllegalAccessException("Unable to update store sections: " +
                     "At least one of the given store sections does not refer to selected store.");
 
@@ -95,12 +100,12 @@ public class StoreServiceImpl implements StoreService {
         Store selectedStore = getStoreById(storeId);
         return storeSectionRepository.saveAll(createDtos.stream()
                 .map(updateDto -> StoreSection.builder()
-                            .store(selectedStore)
-                            .section(sectionRepository.findById(updateDto.sectionId)
-                                    .orElseThrow(() -> new EntityNotFoundException("Unable to update store sections: " +
-                                            "Section with given id does not exist.")))
-                            .position(updateDto.position)
-                            .build())
+                        .store(selectedStore)
+                        .section(sectionRepository.findById(updateDto.sectionId)
+                                .orElseThrow(() -> new EntityNotFoundException("Unable to update store sections: " +
+                                        "Section with given id does not exist.")))
+                        .position(updateDto.position)
+                        .build())
                 .collect(Collectors.toList()));
     }
 
@@ -109,7 +114,7 @@ public class StoreServiceImpl implements StoreService {
         StoreSection storeSection = storeSectionRepository.findById(storeSectionId)
                 .orElseThrow(() -> new EntityNotFoundException("Unable to delete store section: " +
                         "Store section with given id does not exist."));
-        if(!storeSection.getStore().getId().equals(storeId))
+        if (!storeSection.getStore().getId().equals(storeId))
             throw new IllegalAccessException("Unable to delete store section: " +
                     "Given store section does not refer to this store.");
         storeSectionRepository.deleteById(storeSectionId);

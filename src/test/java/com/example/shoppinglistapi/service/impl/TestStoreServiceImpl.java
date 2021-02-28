@@ -169,7 +169,8 @@ public class TestStoreServiceImpl {
                 .position(2)
                 .build();
         List<StoreSection> storeSections = List.of(storeFruits, storeVegetables);
-        when(storeSectionRepository.findAllByStore_Id(1L)).thenReturn(storeSections);
+        when(storeRepository.findById(1L)).thenReturn(Optional.ofNullable(store));
+        when(storeSectionRepository.findAllByStore_IdOrderByPosition(1L)).thenReturn(storeSections);
         List<StoreSection> actualStoreSections = assertDoesNotThrow(
                 () -> storeService.getStoreSectionsByStoreId(1L),
                 "No exception should be thrown on correct store sections fetch."
